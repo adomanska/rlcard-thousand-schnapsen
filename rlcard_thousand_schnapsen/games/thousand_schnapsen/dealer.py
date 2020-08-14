@@ -1,9 +1,10 @@
 import numpy as np
 
-from rlcard.core import Dealer, Player
+from rlcard.core import Dealer
 
 from rlcard_thousand_schnapsen.utils import init_standard_deck_starting_with_nine
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.errors import ImpossibleCardsDealException
+from .player import Player
+from .errors import ImpossibleCardsDealException
 
 
 class ThousandSchnapsenDealer(Dealer):
