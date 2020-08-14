@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import List, Tuple, Optional, Set, Dict
 
 import numpy as np
@@ -10,8 +9,8 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Round
-
-StateSnapshot = Tuple  # TODO: Adjust typing
+from .constants import CARDS_PER_PLAYER_COUNT, ROUNDS_COUNT
+from .utils import PutCardAction, ActivateMarriageAction, EvaluateRoundAction, Action, ActionType
 
 
 class ThousandSchnapsenGame(Game):
@@ -23,7 +22,7 @@ class ThousandSchnapsenGame(Game):
     game_pointer: int
     round: Round
     round_counter: int
-    history: List[StateSnapshot]
+    history: List[Action]
     stock: List[Tuple[int, Card]]
     active_marriage: Optional[Suit]
     used_marriages: Set[Suit]
@@ -58,7 +57,7 @@ class ThousandSchnapsenGame(Game):
 
         # Deal cards
         for player in self.players:
-            self.dealer.deal_cards(player, 8)
+            self.dealer.deal_cards(player, CARDS_PER_PLAYER_COUNT)
         # Init game state
         # We assume for now that player with id 0 always starts
         self.game_pointer = 0
@@ -71,7 +70,7 @@ class ThousandSchnapsenGame(Game):
         self.round.start_new_round(self.game_pointer)
 
         # Count the round. There are 8 rounds in each game.
-        self.round_counter = 0
+        self.round_counter = 1
 
         # Save the history for stepping back to the last state.
         self.history = []
@@ -89,13 +88,14 @@ class ThousandSchnapsenGame(Game):
                 (dict): next player's state
                 (int): next player's id
         """
-        # Save current state in the history
-        self.history.append(self.get_state_snapshot())
-
-        # Update state
+        # Update state and history
         self.game_pointer, activated_marriage = self.round.proceed_round(
             self.players, self.stock, self.used_marriages, action)
+        self.history.append(PutCardAction(action))
         if activated_marriage is not None:
+            self.history.append(
+                ActivateMarriageAction(
+                    (self.active_marriage, activated_marriage)))
             self.active_marriage = activated_marriage
 
         # Check if round is finished and evaluate
@@ -106,13 +106,33 @@ class ThousandSchnapsenGame(Game):
             self.round.start_new_round(winner_id)
             self.game_pointer = winner_id
             self.round_counter += 1
+            self.history.append(EvaluateRoundAction((winner_id, points)))
 
         state = self.get_state(self.game_pointer)
 
         return state, self.game_pointer
 
-    def step_back(self):
-        pass
+    def step_back(self) -> bool:
+        """ Return to the previous state of the game
+        Returns:
+            Status (bool): check if the step back is success or not
+        """
+        if len(self.history) > 0:
+            while True:
+                action_type, data = self.history.pop()
+                if action_type == ActionType.EvaluateRound:
+                    winner_id, points = data
+                    self.players[winner_id] -= points
+                elif action_type == ActionType.ActivateMarriage:
+                    self.active_marriage, activated_marriage = data
+                    self.used_marriages.remove(activated_marriage)
+                elif action_type == ActionType.PutCard:
+                    player_id, card = data
+                    self.players[player_id].hand.append(card)
+                    self.stock.pop()
+                    break
+            return True
+        return False
 
     def get_player_num(self):
         pass
@@ -123,13 +143,9 @@ class ThousandSchnapsenGame(Game):
     def get_player_id(self):
         pass
 
-    def is_over(self):
-        pass
+    def is_over(self) -> bool:
+        return self.round_counter == ROUNDS_COUNT and self.round.is_over(
+            self.stock)
 
     def get_state(self, game_pointer) -> Dict:
         pass
-
-    def get_state_snapshot(self) -> StateSnapshot:
-        game_pointer = self.game_pointer
-        player = deepcopy(self.players[game_pointer])
-        return game_pointer, player
