@@ -1,9 +1,13 @@
+import numpy as np
+
 from rlcard.core import Dealer
 
 
 class ThousandSchnapsenDealer(Dealer):
-    def __init__(self):
-        super().__init__()
+    """ The Dealer class for Thousand Schnapsen
+    """
+    def __init__(self, np_random: np.random.RandomState):
+        self.np_random = np_random
 
     def shuffle(self):
         pass
