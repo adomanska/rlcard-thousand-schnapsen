@@ -12,6 +12,7 @@ class ThousandSchnapsenPlayer(Player):
         super().__init__(player_id)
         self.np_random = np_random
         self.hand = []
+        self.points = 0
 
     def available_order(self):
         pass
