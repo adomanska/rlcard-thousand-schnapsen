@@ -52,3 +52,12 @@ def get_context_card_value(card: Card, first_card_suite: Suit,
     if card.suit == active_marriage:
         multiplier = (MAX_RANK_VALUE + 1)**2
     return (get_card_value(card) + 1) * multiplier
+
+
+def get_marriage_points(suit: Suit) -> int:
+    return {
+        Suit.Spades: 40,
+        Suit.Clubs: 60,
+        Suit.Diamonds: 80,
+        Suit.Hearts: 100
+    }[suit]
