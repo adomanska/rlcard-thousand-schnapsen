@@ -19,16 +19,9 @@ class ThousandSchnapsenRound(Round):
         self.num_players = num_players
         self.np_random = np_random
 
-    def start_new_round(self, game_pointer: int):
-        pass
-
-    def proceed_round(self, players: Sequence[Player],
+    def proceed_round(self, game_pointer: int, players: Sequence[Player],
                       stock: List[Tuple[int, Card]], used_marriages: Set[Suit],
-                      action: Tuple[int, Card]) -> Tuple[int, Suit]:
-        pass
-
-    def evaluate_round(self, stock: List[Tuple[int, Card]],
-                       active_marriage: Suit) -> Tuple[int, int]:
+                      card: Card) -> Tuple[int, Suit]:
         pass
 
     def is_over(self, stock: List[Tuple[int, Card]]) -> bool:
