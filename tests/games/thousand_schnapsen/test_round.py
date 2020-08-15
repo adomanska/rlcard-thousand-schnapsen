@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from rlcard.core import Card
 
-from rlcard_thousand_schnapsen.core import Suit, Rank
+from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Round, Player
 
 
@@ -15,9 +15,9 @@ class TestRound(unittest.TestCase):
         players = [
             Player(player_id, np_random) for player_id in range(num_players)
         ]
-        stock = [(2, Card(Suit.Diamonds, Rank.Ten))]
+        stock = [(2, Card(Diamonds, Ten))]
         used_marriages = set()
-        card = Card(Suit.Diamonds, Rank.Queen)
+        card = Card(Diamonds, Queen)
         players[game_pointer].hand = [card]
         expected = (1, None)
 
@@ -38,10 +38,10 @@ class TestRound(unittest.TestCase):
         ]
         stock = []
         used_marriages = set()
-        card = Card(Suit.Diamonds, Rank.Queen)
-        players[game_pointer].hand = [card, Card(Suit.Diamonds, Rank.King)]
+        card = Card(Diamonds, Queen)
+        players[game_pointer].hand = [card, Card(Diamonds, King)]
         players[game_pointer].points = 0
-        expected = (1, Suit.Diamonds)
+        expected = (1, Diamonds)
 
         result = cur_round.proceed_round(game_pointer, players, stock,
                                          used_marriages, card)
@@ -57,11 +57,11 @@ class TestRound(unittest.TestCase):
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
         cards = [
-            Card(Suit.Spades, Rank.Ten),
-            Card(Suit.Diamonds, Rank.Nine),
-            Card(Suit.Hearts, Rank.Queen),
-            Card(Suit.Spades, Rank.King),
-            Card(Suit.Clubs, Rank.Ace),
+            Card(Spades, Ten),
+            Card(Diamonds, Nine),
+            Card(Hearts, Queen),
+            Card(Spades, King),
+            Card(Clubs, Ace),
         ]
         player.hand = cards
         stock = []
@@ -78,17 +78,17 @@ class TestRound(unittest.TestCase):
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
         cards = [
-            Card(Suit.Spades.value, Rank.Ten.value),
-            Card(Suit.Diamonds.value, Rank.Nine.value),
-            Card(Suit.Hearts.value, Rank.Queen.value),
-            Card(Suit.Spades.value, Rank.Queen.value),
-            Card(Suit.Clubs.value, Rank.Ace.value),
+            Card(Spades, Ten),
+            Card(Diamonds, Nine),
+            Card(Hearts, Queen),
+            Card(Spades, Queen),
+            Card(Clubs, Ace),
         ]
         player.hand = cards
-        stock = [(2, Card(Suit.Spades.value, Rank.King.value))]
+        stock = [(2, Card(Spades, King))]
         active_marriage = None
         expected = [
-            Card(Suit.Spades.value, Rank.Ten.value),
+            Card(Spades, Ten),
         ]
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
@@ -101,18 +101,18 @@ class TestRound(unittest.TestCase):
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
         cards = [
-            Card(Suit.Spades.value, Rank.Ten.value),
-            Card(Suit.Diamonds.value, Rank.Nine.value),
-            Card(Suit.Hearts.value, Rank.Queen.value),
-            Card(Suit.Spades.value, Rank.Queen.value),
-            Card(Suit.Clubs.value, Rank.Ace.value),
+            Card(Spades, Ten),
+            Card(Diamonds, Nine),
+            Card(Hearts, Queen),
+            Card(Spades, Queen),
+            Card(Clubs, Ace),
         ]
         player.hand = cards
-        stock = [(2, Card(Suit.Spades.value, Rank.Ace.value))]
-        active_marriage = Suit.Hearts.value
+        stock = [(2, Card(Spades, Ace))]
+        active_marriage = Hearts
         expected = [
-            Card(Suit.Spades.value, Rank.Ten.value),
-            Card(Suit.Spades.value, Rank.Queen.value),
+            Card(Spades, Ten),
+            Card(Spades, Queen),
         ]
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
@@ -125,16 +125,16 @@ class TestRound(unittest.TestCase):
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
         cards = [
-            Card(Suit.Spades.value, Rank.Ten.value),
-            Card(Suit.Diamonds.value, Rank.Nine.value),
-            Card(Suit.Hearts.value, Rank.Queen.value),
-            Card(Suit.Spades.value, Rank.Queen.value),
+            Card(Spades, Ten),
+            Card(Diamonds, Nine),
+            Card(Hearts, Queen),
+            Card(Spades, Queen),
         ]
         player.hand = cards
-        stock = [(2, Card(Suit.Clubs.value, Rank.Ace.value))]
-        active_marriage = Suit.Hearts.value
+        stock = [(2, Card(Clubs, Ace))]
+        active_marriage = Hearts
         expected = [
-            Card(Suit.Hearts.value, Rank.Queen.value),
+            Card(Hearts, Queen),
         ]
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
@@ -147,13 +147,13 @@ class TestRound(unittest.TestCase):
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
         cards = [
-            Card(Suit.Spades.value, Rank.Ten.value),
-            Card(Suit.Diamonds.value, Rank.Nine.value),
-            Card(Suit.Spades.value, Rank.Queen.value),
+            Card(Spades, Ten),
+            Card(Diamonds, Nine),
+            Card(Spades, Queen),
         ]
         player.hand = cards
-        stock = [(2, Card(Suit.Clubs.value, Rank.Ace.value))]
-        active_marriage = Suit.Hearts.value
+        stock = [(2, Card(Clubs, Ace))]
+        active_marriage = Hearts
         expected = cards
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
@@ -167,15 +167,15 @@ class TestRound(unittest.TestCase):
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
         cards = [
-            Card(Suit.Spades.value, Rank.Ten.value),
-            Card(Suit.Diamonds.value, Rank.Nine.value),
-            Card(Suit.Spades.value, Rank.Queen.value),
-            Card(Suit.Clubs.value, Rank.Ten.value)
+            Card(Spades, Ten),
+            Card(Diamonds, Nine),
+            Card(Spades, Queen),
+            Card(Clubs, Ten)
         ]
         player.hand = cards
-        stock = [(2, Card(Suit.Clubs.value, Rank.Ace.value))]
-        active_marriage = Suit.Clubs.value
-        expected = [Card(Suit.Clubs.value, Rank.Ten.value)]
+        stock = [(2, Card(Clubs, Ace))]
+        active_marriage = Clubs
+        expected = [Card(Clubs, Ten)]
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 

@@ -4,7 +4,6 @@ import numpy as np
 
 from rlcard.core import Game, Card
 
-from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
@@ -24,8 +23,8 @@ class ThousandSchnapsenGame(Game):
     round_counter: int
     history: List[Action]
     stock: List[Tuple[int, Card]]
-    active_marriage: Optional[Suit]
-    used_marriages: Set[Suit]
+    active_marriage: Optional[str]
+    used_marriages: Set[str]
 
     def __init__(self):
         """ Initialize the class ThousandSchnapsenGame

@@ -24,7 +24,7 @@ class PutCardAction(NamedTuple, Action):
 
 
 class ActivateMarriageAction(NamedTuple, Action):
-    data: Tuple[Optional[Suit], Suit]
+    data: Tuple[Optional[str], str]
     type = ActionType.ActivateMarriage
 
 
@@ -37,20 +37,20 @@ def get_card_value(card: Card) -> int:
     return {Nine: 0, Jack: 2, Queen: 3, King: 4, Ten: 10, Ace: 11}[card.rank]
 
 
-def get_context_card_value(card: Card, first_card_suit: Suit,
-                           active_marriage: Optional[Suit]) -> int:
+def get_context_card_value(card: Card, first_card_str: str,
+                           active_marriage: Optional[str]) -> int:
     multiplier = 1
-    if card.suit == first_card_suit:
+    if card.suit == first_card_str:
         multiplier = (MAX_RANK_VALUE + 1)
     if card.suit == active_marriage:
         multiplier = (MAX_RANK_VALUE + 1)**2
     return (get_card_value(card) + 1) * multiplier
 
 
-def get_marriage_points(suit: Suit) -> int:
+def get_marriage_points(suit: str) -> int:
     return {Spades: 40, Clubs: 60, Diamonds: 80, Hearts: 100}[suit]
 
 
-def get_color(suit: Suit) -> Set[Card]:
+def get_color(suit: str) -> Set[Card]:
     ranks = ['9', 'J', 'Q', 'K', 'T', 'A']
     return set([Card(suit, rank) for rank in ranks])

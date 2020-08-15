@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Union
 
 # Suit constants
 Spades = 'S'
@@ -13,7 +13,3 @@ Jack = 'J'
 Queen = 'Q'
 King = 'K'
 Ace = 'A'
-
-Suit = Literal['S', 'C', 'D', 'H']
-
-Rank = Literal['9', 'T', 'J', 'Q', 'K', 'A']
