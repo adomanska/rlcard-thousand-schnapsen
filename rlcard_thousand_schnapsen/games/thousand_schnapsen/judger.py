@@ -25,9 +25,9 @@ class ThousandSchnapsenJudger(Judger):
            (int): Id of the winner
            (int): Points won
        """
-        first_card_suite = stock[0][1].suit
+        first_card_suit = stock[0][1].suit
         cards_context_values = [
-            get_context_card_value(card, first_card_suite, active_marriage)
+            get_context_card_value(card, first_card_suit, active_marriage)
             for _, card in stock
         ]
         winner_id = stock[np.argmax(cards_context_values)][0]

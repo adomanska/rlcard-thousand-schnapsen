@@ -4,7 +4,7 @@ import numpy as np
 
 from rlcard.core import Game, Card
 
-from rlcard_thousand_schnapsen.core import Suit
+from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
@@ -74,9 +74,9 @@ class ThousandSchnapsenGame(Game):
         # Save the history for stepping back to the last state.
         self.history = []
 
-        state = self.get_state(self.game_pointer)
+        player_state = self.get_state(self.game_pointer)
 
-        return state, self.game_pointer
+        return player_state, self.game_pointer
 
     def step(self, card: Card) -> Tuple[Dict, int]:
         """ Get the next state
@@ -108,9 +108,9 @@ class ThousandSchnapsenGame(Game):
             self.round_counter += 1
             self.history.append(EvaluateRoundAction((winner_id, points)))
 
-        state = self.get_state(self.game_pointer)
+        player_state = self.get_state(self.game_pointer)
 
-        return state, self.game_pointer
+        return player_state, self.game_pointer
 
     def step_back(self) -> bool:
         """ Return to the previous state of the game
@@ -164,7 +164,7 @@ class ThousandSchnapsenGame(Game):
         """
         return self.round_counter > ROUNDS_COUNT
 
-    def get_state(self, game_pointer) -> Dict:
+    def get_state(self, player_id) -> Dict:
         pass
 
     def get_legal_actions(self) -> Collection[Card]:

@@ -3,7 +3,7 @@ from typing import Tuple, NamedTuple, Any, Optional, Set
 
 from rlcard.core import Card
 
-from rlcard_thousand_schnapsen.core import Suit, Rank
+from rlcard_thousand_schnapsen.core import *
 from .constants import MAX_RANK_VALUE
 
 
@@ -34,20 +34,13 @@ class EvaluateRoundAction(NamedTuple, Action):
 
 
 def get_card_value(card: Card) -> int:
-    return {
-        Rank.Nine: 0,
-        Rank.Jack: 2,
-        Rank.Queen: 3,
-        Rank.King: 4,
-        Rank.Ten: 10,
-        Rank.Ace: 11
-    }[Rank(card.rank)]
+    return {Nine: 0, Jack: 2, Queen: 3, King: 4, Ten: 10, Ace: 11}[card.rank]
 
 
-def get_context_card_value(card: Card, first_card_suite: Suit,
+def get_context_card_value(card: Card, first_card_suit: Suit,
                            active_marriage: Optional[Suit]) -> int:
     multiplier = 1
-    if card.suit == first_card_suite:
+    if card.suit == first_card_suit:
         multiplier = (MAX_RANK_VALUE + 1)
     if card.suit == active_marriage:
         multiplier = (MAX_RANK_VALUE + 1)**2
@@ -55,12 +48,7 @@ def get_context_card_value(card: Card, first_card_suite: Suit,
 
 
 def get_marriage_points(suit: Suit) -> int:
-    return {
-        Suit.Spades: 40,
-        Suit.Clubs: 60,
-        Suit.Diamonds: 80,
-        Suit.Hearts: 100
-    }[suit]
+    return {Spades: 40, Clubs: 60, Diamonds: 80, Hearts: 100}[suit]
 
 
 def get_color(suit: Suit) -> Set[Card]:
