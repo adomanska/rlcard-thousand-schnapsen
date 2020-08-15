@@ -55,6 +55,7 @@ class ThousandSchnapsenGame(Game):
         self.judger = Judger(self.np_random)
 
         # Deal cards
+        self.dealer.shuffle()
         for player in self.players:
             self.dealer.deal_cards(player, CARDS_PER_PLAYER_COUNT)
         # Init game state
@@ -172,7 +173,6 @@ class ThousandSchnapsenGame(Game):
 
 
 # Test the game
-
 if __name__ == "__main__":
     game = ThousandSchnapsenGame()
     print('New Game')
@@ -183,6 +183,7 @@ if __name__ == "__main__":
         i += 1
         legal_actions = list(game.get_legal_actions())
         action = np.random.choice(legal_actions)
-        print(game_pointer, action, legal_actions)
+        print(game_pointer, action,
+              [str(legal_action) for legal_action in legal_actions])
         state, game_pointer = game.step(action)
         print(game_pointer, state)
