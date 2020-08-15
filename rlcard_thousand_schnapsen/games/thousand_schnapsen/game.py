@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional, Set, Dict
+from typing import List, Tuple, Optional, Set, Dict, Collection
 
 import numpy as np
 
@@ -9,8 +9,8 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Round
-from .constants import CARDS_PER_PLAYER_COUNT, ROUNDS_COUNT
-from .utils import PutCardAction, ActivateMarriageAction, EvaluateRoundAction, Action, ActionType
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_PLAYER_COUNT, ROUNDS_COUNT
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardAction, ActivateMarriageAction, EvaluateRoundAction, Action, ActionType
 
 
 class ThousandSchnapsenGame(Game):
@@ -104,6 +104,7 @@ class ThousandSchnapsenGame(Game):
                 self.stock, self.active_marriage)
             self.players[winner_id].points += points
             self.game_pointer = winner_id
+            self.stock = []
             self.round_counter += 1
             self.history.append(EvaluateRoundAction((winner_id, points)))
 
@@ -118,7 +119,9 @@ class ThousandSchnapsenGame(Game):
         """
         if len(self.history) > 0:
             while True:
-                action_type, data = self.history.pop()
+                history_action = self.history.pop()
+                action_type = history_action.type
+                data = history_action.data
                 if action_type == ActionType.EvaluateRound:
                     winner_id, points = data
                     self.players[winner_id] -= points
@@ -159,8 +162,28 @@ class ThousandSchnapsenGame(Game):
         Returns:
             (boolean): True if the game is over
         """
-        return self.round_counter == ROUNDS_COUNT and self.round.is_over(
-            self.stock)
+        return self.round_counter > ROUNDS_COUNT
 
     def get_state(self, game_pointer) -> Dict:
         pass
+
+    def get_legal_actions(self) -> Collection[Card]:
+        return self.round.get_legal_actions(self.stock, self.active_marriage,
+                                            self.players[self.game_pointer])
+
+
+# Test the game
+
+if __name__ == "__main__":
+    game = ThousandSchnapsenGame()
+    print('New Game')
+    state, game_pointer = game.init_game()
+    print(game_pointer, state)
+    i = 1
+    while not game.is_over():
+        i += 1
+        legal_actions = list(game.get_legal_actions())
+        action = np.random.choice(legal_actions)
+        print(game_pointer, action, legal_actions)
+        state, game_pointer = game.step(action)
+        print(game_pointer, state)

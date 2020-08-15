@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, NamedTuple, Any, Optional
+from typing import Tuple, NamedTuple, Any, Optional, Set
 
 from rlcard.core import Card
 
@@ -41,7 +41,7 @@ def get_card_value(card: Card) -> int:
         Rank.King: 4,
         Rank.Ten: 10,
         Rank.Ace: 11
-    }[card.rank]
+    }[Rank(card.rank)]
 
 
 def get_context_card_value(card: Card, first_card_suite: Suit,
@@ -61,3 +61,8 @@ def get_marriage_points(suit: Suit) -> int:
         Suit.Diamonds: 80,
         Suit.Hearts: 100
     }[suit]
+
+
+def get_color(suit: Suit) -> Set[Card]:
+    ranks = ['9', 'J', 'Q', 'K', 'T', 'A']
+    return set([Card(suit, rank) for rank in ranks])
