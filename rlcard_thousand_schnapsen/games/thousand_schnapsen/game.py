@@ -178,9 +178,7 @@ if __name__ == "__main__":
     print('New Game')
     state, game_pointer = game.init_game()
     print(game_pointer, state)
-    i = 1
     while not game.is_over():
-        i += 1
         legal_actions = list(game.get_legal_actions())
         action = np.random.choice(legal_actions)
         print(game_pointer, action,
