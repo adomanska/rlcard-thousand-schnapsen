@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, NamedTuple, Any, Optional, Set
+from typing import Tuple, NamedTuple, Any, Optional, Set, List
 
 from rlcard.core import Card
 
@@ -24,13 +24,13 @@ class PutCardAction(NamedTuple, Action):
 
 
 class ActivateMarriageAction(NamedTuple, Action):
-    data: Tuple[Optional[str], str]
+    data: Tuple[Optional[str], str, int]
     type = ActionType.ActivateMarriage
 
 
 class EvaluateRoundAction(NamedTuple, Action):
-    data: Tuple[int, int]
-    type = ActionType.PutCard
+    data: Tuple[int, int, List[Tuple[int, Card]]]
+    type = ActionType.EvaluateRound
 
 
 def get_card_value(card: Card) -> int:

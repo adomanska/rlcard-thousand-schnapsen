@@ -1,3 +1,4 @@
+from copy import copy
 from typing import List, Tuple, Optional, Set, Dict, Collection
 
 import numpy as np
@@ -9,7 +10,8 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Round
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_PLAYER_COUNT, ROUNDS_COUNT
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardAction, ActivateMarriageAction, EvaluateRoundAction, Action, ActionType
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardAction, ActivateMarriageAction,\
+    EvaluateRoundAction, Action, ActionType, get_marriage_points
 
 
 class ThousandSchnapsenGame(Game):
@@ -89,14 +91,16 @@ class ThousandSchnapsenGame(Game):
         """
         # Update state and history
         self.history.append(PutCardAction((self.game_pointer, card)))
-        self.game_pointer, activated_marriage = self.round.proceed_round(
+        new_game_pointer, activated_marriage = self.round.proceed_round(
             self.game_pointer, self.players, self.stock, self.used_marriages,
             card)
         if activated_marriage is not None:
             self.history.append(
                 ActivateMarriageAction(
-                    (self.active_marriage, activated_marriage)))
+                    (self.active_marriage, activated_marriage,
+                     self.game_pointer)))
             self.active_marriage = activated_marriage
+        self.game_pointer = new_game_pointer
 
         # Check if round is finished and evaluate
         if self.round.is_over(self.stock):
@@ -104,9 +108,9 @@ class ThousandSchnapsenGame(Game):
                 self.stock, self.active_marriage)
             self.players[winner_id].points += points
             self.game_pointer = winner_id
-            self.stock = []
             self.round_counter += 1
-            self.history.append(EvaluateRoundAction((winner_id, points)))
+            self.history.append(
+                EvaluateRoundAction((winner_id, points, copy(self.stock))))
 
         player_state = self.get_state(self.game_pointer)
 
@@ -123,14 +127,18 @@ class ThousandSchnapsenGame(Game):
                 action_type = history_action.type
                 data = history_action.data
                 if action_type == ActionType.EvaluateRound:
-                    winner_id, points = data
-                    self.players[winner_id] -= points
+                    winner_id, points, stock = data
+                    self.players[winner_id].points -= points
+                    self.stock = stock
                 elif action_type == ActionType.ActivateMarriage:
-                    self.active_marriage, activated_marriage = data
+                    self.active_marriage, activated_marriage, player_id = data
                     self.used_marriages.remove(activated_marriage)
+                    self.players[player_id].points -= get_marriage_points(
+                        activated_marriage)
                 elif action_type == ActionType.PutCard:
                     player_id, card = data
                     self.players[player_id].hand.append(card)
+                    self.game_pointer = player_id
                     self.stock.pop()
                     break
             return True
@@ -179,7 +187,7 @@ if __name__ == "__main__":
     state, game_pointer = game.init_game()
     print(game_pointer, state)
     while not game.is_over():
-        legal_actions = list(game.get_legal_actions())
+        legal_actions = game.get_legal_actions()
         action = np.random.choice(legal_actions)
         print(game_pointer, action,
               [str(legal_action) for legal_action in legal_actions])
