@@ -1,5 +1,3 @@
-from typing import Union
-
 # Suit constants
 Spades = 'S'
 Clubs = 'C'

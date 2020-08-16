@@ -1,5 +1,5 @@
 from copy import copy
-from typing import List, Tuple, Optional, Set, Dict, Collection
+from typing import List, Tuple, Optional, Set, Dict, Sequence
 
 import numpy as np
 
@@ -9,7 +9,8 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Round
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_PLAYER_COUNT, ROUNDS_COUNT
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_PLAYER_COUNT, ROUNDS_COUNT,\
+    CARDS_COUNT
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardAction, ActivateMarriageAction,\
     EvaluateRoundAction, Action, ActionType, get_marriage_points
 
@@ -37,7 +38,8 @@ class ThousandSchnapsenGame(Game):
     def init_game(self) -> Tuple[Dict, int]:
         """ Initialize the game of Thousand Schnapsen
         
-        This version supports four-player Thousand Schnapsen
+        This version supports three-player and four-players Thousand Schnapsen game
+        (in four-player version dealer sits)
         
         Returns:
             (tuple): Tuple containing:
@@ -56,12 +58,11 @@ class ThousandSchnapsenGame(Game):
         # Initialize a judger class which will decide who wins in the end
         self.judger = Judger(self.np_random)
 
-        # Deal cards
+        # Shuffle and deal cards
         self.dealer.shuffle()
         for player in self.players:
             self.dealer.deal_cards(player, CARDS_PER_PLAYER_COUNT)
-        # Init game state
-        # We assume for now that player with id 0 always starts
+        # Init game state (we assume for now that player with id 0 always starts)
         self.game_pointer = 0
         self.stock = []
         self.active_marriage = None
@@ -73,7 +74,7 @@ class ThousandSchnapsenGame(Game):
         # Count the round. There are 8 rounds in each game.
         self.round_counter = 1
 
-        # Save the history for stepping back to the last state.
+        # Save the history of actions for stepping back to the last state.
         self.history = []
 
         player_state = self.get_state(self.game_pointer)
@@ -82,12 +83,12 @@ class ThousandSchnapsenGame(Game):
 
     def step(self, card: Card) -> Tuple[Dict, int]:
         """ Get the next state
-        Args:
-            card Card: a specific action, selected card to put
+        Arg:
+            card (Card): A specific action -- selected card to put
         Returns:
             (tuple): Tuple containing:
-                (dict): next player's state
-                (int): next player's id
+                (dict): Next player's state
+                (int): Next player's id
         """
         # Update state and history
         self.history.append(PutCardAction((self.game_pointer, card)))
@@ -119,8 +120,8 @@ class ThousandSchnapsenGame(Game):
 
     def step_back(self) -> bool:
         """ Return to the previous state of the game
-        Returns:
-            Status (bool): check if the step back is success or not
+        Return:
+            (bool): True if the step back is done successfully, otherwise False
         """
         if len(self.history) > 0:
             while True:
@@ -147,28 +148,28 @@ class ThousandSchnapsenGame(Game):
 
     def get_player_num(self) -> int:
         """ Return the number of players in Thousand Schnapsen
-        Returns:
+        Return:
             (int): The number of players in the game
         """
         return self.num_players
 
     def get_action_num(self) -> int:
         """ Return the number of applicable actions
-        Returns:
+        Return:
             (int): The number of actions. There are 24 actions (every card in deck)
         """
-        return 24
+        return CARDS_COUNT
 
     def get_player_id(self) -> int:
         """ Return the current player's id
-       Returns:
-           (int): current player's id
+       Return:
+           (int): Current player's id
        """
         return self.game_pointer
 
     def is_over(self) -> bool:
         """ Check if the game is over
-        Returns:
+        Return:
             (boolean): True if the game is over
         """
         return self.round_counter > ROUNDS_COUNT
@@ -176,12 +177,16 @@ class ThousandSchnapsenGame(Game):
     def get_state(self, player_id) -> Dict:
         pass
 
-    def get_legal_actions(self) -> Collection[Card]:
+    def get_legal_actions(self) -> Sequence[Card]:
+        """ Calculate and return legal actions according to Thousand Schnapsen rules
+        Return:
+            (Sequence[Card]): Cards that can be put on the stock
+        """
         return self.round.get_legal_actions(self.stock, self.active_marriage,
                                             self.players[self.game_pointer])
 
 
-# Test the game
+# Run random game simulation
 if __name__ == "__main__":
     game = ThousandSchnapsenGame()
     print('New Game')

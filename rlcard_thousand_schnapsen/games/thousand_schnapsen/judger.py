@@ -16,13 +16,14 @@ class ThousandSchnapsenJudger(Judger):
 
     def judge_round(self, stock: Sequence[Tuple[int, Card]],
                     active_marriage: Optional[str]) -> Tuple[int, int]:
-        """ Judge the winner of the round and counts points.
+        """ Judge the winner of the round and count points
        Args:
-           stock (Sequence[Tuple[int, Card]]): The stock of cards put by players.
+           stock (Sequence[Tuple[int, Card]]): The stock of cards with players' ids
            active_marriage (Optional[str]): Currently active marriage
        Returns:
-           (int): Id of the winner
-           (int): Points won
+           (tuple): Tuple containing:
+               (int): Id of the winner
+               (int): Points won
        """
         first_card_str = stock[0][1].suit
         cards_context_values = [
@@ -34,10 +35,10 @@ class ThousandSchnapsenJudger(Judger):
         return winner_id, points
 
     def judge_game(self, players: Sequence[Player]) -> Sequence[int]:
-        """ Judge the winner of the game.
-        Args:
+        """ Judge the winner of the game
+        Arg:
             players (Sequence[Player]): The list of players who play the game
-        Returns:
-            (Sequence[int]): Points won for each player
+        Return:
+            (Sequence[int]): Points won by each player
         """
         return [player.points for player in players]

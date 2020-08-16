@@ -12,8 +12,6 @@ from .utils import get_marriage_points, get_context_card_value, get_color
 class ThousandSchnapsenRound(Round):
     """ The Round class for Thousand Schnapsen
     """
-    game_pointer: int
-
     def __init__(self, num_players: int, np_random: np.random.RandomState):
         """ Initialize a ThousandSchnapsenRound class
         """
@@ -27,15 +25,16 @@ class ThousandSchnapsenRound(Round):
         """ Call other Classes's functions to keep one round running
 
         Args:
-            game_pointer (int): current player id
-            players (Sequence[Player): collection of players
-            stock (List[Tuple[(int, Card)]]): stock of cards
+            game_pointer (int): Current player's id
+            players (Sequence[Player]): Collection of players
+            stock (List[Tuple[int, Card]]): Stock of cards
             used_marriages (Set[str]): set of already used marriages
-            card: Card: action to perform
+            card (Card): action to perform
 
         Returns:
-            (int): next player id
-            (Optional[str]): new active marriage
+            (tuple): Tuple containing:
+                (int): Next player id
+                (Optional[str]): New active marriage (if activated)
         """
         activated_marriage = None
         if len(stock) == 0 and self._check_marriage(players[game_pointer],
@@ -51,10 +50,26 @@ class ThousandSchnapsenRound(Round):
         return next_game_pointer, activated_marriage
 
     def is_over(self, stock: List[Tuple[int, Card]]) -> bool:
+        """ Check if round is over
+        Return:
+            (bool): True if round is over, otherwise False
+        """
         return len(stock) == self.num_players
 
-    def get_legal_actions(self, stock: List, active_marriage: Optional[str],
+    @staticmethod
+    def get_legal_actions(stock: List[Tuple[int, Card]],
+                          active_marriage: Optional[str],
                           player: ThousandSchnapsenPlayer) -> Sequence[Card]:
+        """ Calculate and return legal actions according to Thousand Schnapsen rules
+        
+        Args:
+            stock (List[Tuple[int, Card]]): Stock of cards
+            active_marriage (Optional[str]): Suit of currently active marriage
+            player (ThousandSchnapsenPlayer): Current player 
+            
+        Return:
+            (Sequence[Card]): Cards that can be put on the stock
+        """
         if len(stock) == 0:
             return player.hand
 
@@ -81,6 +96,15 @@ class ThousandSchnapsenRound(Round):
 
     @staticmethod
     def _check_marriage(player: ThousandSchnapsenPlayer, card: Card) -> bool:
+        """ Check if new marriage is activated 
+        
+        Args:
+            player (ThousandSchnapsenPlayer): Current player
+            card (Card): Card to put on the stock
+            
+        Return:
+            (bool): True if new marriage activated, otherwise False
+        """
         if card.rank == King and (Card(card.suit, Queen) in player.hand):
             return True
         if card.rank == Queen and (Card(card.suit, King) in player.hand):
