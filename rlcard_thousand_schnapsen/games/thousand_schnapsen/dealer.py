@@ -26,7 +26,7 @@ class ThousandSchnapsenDealer(Dealer):
     def deal_cards(self, player: Player, num: int):
         """ Deal some cards from deck to one player
         Args:
-            player (object): The object of ThousandSchnapsenPlayer
+            player (Player): The object of ThousandSchnapsenPlayer
             num (int): The number of cards to be dealt
         """
         if len(self.deck) < num:

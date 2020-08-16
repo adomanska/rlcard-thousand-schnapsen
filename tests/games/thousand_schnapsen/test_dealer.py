@@ -4,7 +4,7 @@ import numpy as np
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer, Player, ImpossibleCardsDealException
 
 
-class TestUtils(unittest.TestCase):
+class TestDealer(unittest.TestCase):
     def test_deal_cards(self):
         np_random = np.random.RandomState()
         players = [Player(player_id, np_random) for player_id in range(3)]
