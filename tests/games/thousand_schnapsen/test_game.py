@@ -41,8 +41,7 @@ class TestGame(unittest.TestCase):
         snap = {
             'points': [player.points for player in game.players],
             'hands': [set(player.hand) for player in game.players],
-            'stock':
-            copy(game.stock) if len(game.stock) < game.num_players else [],
+            'stock': copy(game.stock),
             'used_marriages': copy(game.used_marriages),
             'active_marriage': copy(game.active_marriage),
             'game_pointer': game.game_pointer

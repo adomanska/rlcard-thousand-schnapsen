@@ -111,6 +111,7 @@ class ThousandSchnapsenGame(Game):
             self.round_counter += 1
             self.history.append(
                 EvaluateRoundAction((winner_id, points, copy(self.stock))))
+            self.stock.clear()
 
         player_state = self.get_state(self.game_pointer)
 

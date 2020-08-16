@@ -38,8 +38,6 @@ class ThousandSchnapsenRound(Round):
             (Optional[str]): new active marriage
         """
         activated_marriage = None
-        if len(stock) == self.num_players:
-            stock.clear()
         if len(stock) == 0 and self._check_marriage(players[game_pointer],
                                                     card):
             activated_marriage = card.suit
