@@ -3,8 +3,9 @@ from typing import List, Tuple, Optional, Set, Dict, Sequence
 
 import numpy as np
 
-from rlcard.core import Game, Card
+from rlcard.core import Card
 
+from rlcard_thousand_schnapsen.core import LegalActionsGame
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
@@ -15,7 +16,7 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardActi
     EvaluateRoundAction, Action, ActionType, get_marriage_points
 
 
-class ThousandSchnapsenGame(Game):
+class ThousandSchnapsenGame(LegalActionsGame):
     """ The Game class for Thousand Schnapsen
     """
     dealer: Dealer
@@ -132,6 +133,7 @@ class ThousandSchnapsenGame(Game):
                     winner_id, points, stock = data
                     self.players[winner_id].points -= points
                     self.stock = stock
+                    self.round_counter -= 1
                 elif action_type == ActionType.ActivateMarriage:
                     self.active_marriage, activated_marriage, player_id = data
                     self.used_marriages.remove(activated_marriage)

@@ -1,3 +1,8 @@
+from abc import ABC
+from typing import Sequence, Any
+
+from rlcard.core import Game
+
 # Suit constants
 Spades = 'S'
 Clubs = 'C'
@@ -11,3 +16,8 @@ Jack = 'J'
 Queen = 'Q'
 King = 'K'
 Ace = 'A'
+
+
+class LegalActionsGame(Game, ABC):
+    def get_legal_actions(self) -> Sequence[Any]:
+        pass

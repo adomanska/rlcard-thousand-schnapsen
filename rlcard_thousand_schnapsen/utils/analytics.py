@@ -1,11 +1,10 @@
-from abc import ABC
 from enum import Enum, auto
 import time
-from typing import Any, Sequence, Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
-from rlcard.core import Game
+from rlcard_thousand_schnapsen.core import LegalActionsGame
 
 
 class TraversalMode(Enum):
@@ -13,42 +12,44 @@ class TraversalMode(Enum):
     MonteCarlo = auto()
 
 
-class LegalActionsGame(Game, ABC):
-    def get_legal_actions(self) -> Sequence[Any]:
-        pass
-
-
-def perform_monte_carlo_traversal(game: LegalActionsGame, player_id: int):
+def perform_monte_carlo_traversal(game: LegalActionsGame,
+                                  player_id: int) -> int:
     if game.is_over():
-        return
+        return 1
+    nodes_count = 0
     legal_actions = game.get_legal_actions()
-    if game.get_player_id() == player_id:
+    if game.get_player_id() != player_id:
         legal_actions = np.random.choice(legal_actions, 1)
 
     for action in legal_actions:
         game.step(action)
-        perform_monte_carlo_traversal(game, player_id)
+        nodes_count += perform_monte_carlo_traversal(game, player_id)
         game.step_back()
+    return nodes_count
 
 
-def perform_complete_traversal(game: LegalActionsGame):
+def perform_complete_traversal(game: LegalActionsGame) -> int:
     if game.is_over():
-        return
+        return 1
+    nodes_count = 0
     legal_actions = game.get_legal_actions()
 
     for action in legal_actions:
         game.step(action)
-        perform_complete_traversal(game)
+        nodes_count += perform_complete_traversal(game)
         game.step_back()
+    return nodes_count
 
 
-def measure_traversal_time(game: LegalActionsGame,
-                           mode: TraversalMode,
-                           player_id: Optional[int] = None) -> float:
+def measure_traversal_time(
+        game: LegalActionsGame,
+        mode: TraversalMode,
+        player_id: Optional[int] = None) -> Tuple[float, int]:
+    nodes_count = 0
     start = time.time()
     if mode == TraversalMode.MonteCarlo and player_id is not None:
-        perform_monte_carlo_traversal(game, player_id)
+        nodes_count = perform_monte_carlo_traversal(game, player_id)
     if mode == TraversalMode.Complete:
-        perform_complete_traversal(game)
+        nodes_count = perform_complete_traversal(game)
     end = time.time()
-    return end - start
+    return end - start, nodes_count
