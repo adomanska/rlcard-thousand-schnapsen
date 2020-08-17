@@ -16,7 +16,7 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardActi
     EvaluateRoundAction, Action, ActionType, get_marriage_points
 
 
-class ThousandSchnapsenGame(LegalActionsGame):
+class ThousandSchnapsenGame(LegalActionsGame[Card]):
     """ The Game class for Thousand Schnapsen
     """
     dealer: Dealer

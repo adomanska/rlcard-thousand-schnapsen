@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Sequence, Any
+from typing import Sequence, Any, Generic, TypeVar
 
 from rlcard.core import Game
 
@@ -17,7 +17,9 @@ Queen = 'Q'
 King = 'K'
 Ace = 'A'
 
+T = TypeVar('T')
 
-class LegalActionsGame(Game, ABC):
-    def get_legal_actions(self) -> Sequence[Any]:
+
+class LegalActionsGame(Game, ABC, Generic[T]):
+    def get_legal_actions(self) -> Sequence[T]:
         pass

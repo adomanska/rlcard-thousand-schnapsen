@@ -5,13 +5,13 @@ from progressbar import progressbar
 if __name__ == "__main__":
     N = 100
     game = Game()
-    total_time = 0
-    total_nodes = 0
+    total_elapsed_time = 0
+    total_nodes_count = 0
     for _ in progressbar(range(N)):
-        for i in range(3):
+        for player_id in range(3):
             game.init_game()
             elapsed_time, nodes = measure_traversal_time(
-                game, TraversalMode.MonteCarlo, i)
-            total_time += elapsed_time
-            total_nodes += nodes
-    print(total_time / N, total_nodes / N)
+                game, TraversalMode.MonteCarlo, player_id)
+            total_elapsed_time += elapsed_time
+            total_nodes_count += nodes
+    print(total_elapsed_time / N, total_nodes_count / N)

@@ -1,6 +1,6 @@
 from enum import Enum, auto
 import time
-from typing import Optional, Tuple
+from typing import Optional, Tuple, TypeVar
 
 import numpy as np
 
@@ -12,7 +12,10 @@ class TraversalMode(Enum):
     MonteCarlo = auto()
 
 
-def perform_monte_carlo_traversal(game: LegalActionsGame,
+T = TypeVar('T')
+
+
+def perform_monte_carlo_traversal(game: LegalActionsGame[T],
                                   player_id: int) -> int:
     if game.is_over():
         return 1
@@ -25,10 +28,10 @@ def perform_monte_carlo_traversal(game: LegalActionsGame,
         game.step(action)
         nodes_count += perform_monte_carlo_traversal(game, player_id)
         game.step_back()
-    return nodes_count
+    return nodes_count + 1
 
 
-def perform_complete_traversal(game: LegalActionsGame) -> int:
+def perform_complete_traversal(game: LegalActionsGame[T]) -> int:
     if game.is_over():
         return 1
     nodes_count = 0
@@ -38,11 +41,11 @@ def perform_complete_traversal(game: LegalActionsGame) -> int:
         game.step(action)
         nodes_count += perform_complete_traversal(game)
         game.step_back()
-    return nodes_count
+    return nodes_count + 1
 
 
 def measure_traversal_time(
-        game: LegalActionsGame,
+        game: LegalActionsGame[T],
         mode: TraversalMode,
         player_id: Optional[int] = None) -> Tuple[float, int]:
     nodes_count = 0
