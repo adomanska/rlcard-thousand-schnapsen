@@ -44,6 +44,7 @@ class TestGame(unittest.TestCase):
             'stock': copy(game.stock),
             'used_marriages': copy(game.used_marriages),
             'active_marriage': copy(game.active_marriage),
-            'game_pointer': game.game_pointer
+            'game_pointer': game.game_pointer,
+            'round_counter': game.round_counter
         }
         return snap
