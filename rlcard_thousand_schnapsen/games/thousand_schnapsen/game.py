@@ -141,6 +141,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                 elif action_type == ActionType.PutCard:
                     player_id, card = data
                     self.players[player_id].hand.append(card)
+                    self.players[player_id].used.remove(card)
                     self.game_pointer = player_id
                     self.stock.pop()
                     break
@@ -175,8 +176,23 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         """
         return self.round_counter > ROUNDS_COUNT
 
-    def get_state(self, player_id) -> Dict:
-        pass
+    def get_state(self, player_id: int) -> Dict:
+        # Get opponents indices
+        first_player = self.stock[0][0] if len(
+            self.stock) > 0 else self.game_pointer
+        indices = [(first_player + i) % self.num_players
+                   for i in range(self.num_players)]
+        indices = [index for index in indices if index != player_id]
+
+        player_state = self.players[player_id].get_state()
+        player_state['current_player'] = self.game_pointer
+        player_state['other_used_cards'] = [
+            self.players[index].used for index in indices
+        ]
+        player_state['stock_cards'] = [card for _, card in self.stock]
+        player_state['active_marriage'] = self.active_marriage
+        player_state['used_marriages'] = self.used_marriages
+        return player_state
 
     def get_legal_actions(self) -> Sequence[Card]:
         """ Calculate and return legal actions according to Thousand Schnapsen rules

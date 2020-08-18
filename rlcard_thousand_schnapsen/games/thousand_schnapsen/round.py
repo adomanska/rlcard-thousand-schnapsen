@@ -47,6 +47,7 @@ class ThousandSchnapsenRound(Round):
 
         stock.append((game_pointer, card))
         players[game_pointer].hand.remove(card)
+        players[game_pointer].used.append(card)
         next_game_pointer = (game_pointer + 1) % self.num_players
         return next_game_pointer, activated_marriage
 
