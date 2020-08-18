@@ -3,8 +3,6 @@ from typing import List, Tuple, Optional, Set, Dict, Sequence
 
 import numpy as np
 
-from rlcard.core import Card
-
 from rlcard_thousand_schnapsen.core import LegalActionsGame
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
@@ -14,6 +12,7 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_P
     CARDS_COUNT
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardAction, ActivateMarriageAction,\
     EvaluateRoundAction, Action, ActionType, get_marriage_points
+from rlcard_thousand_schnapsen.utils import Card
 
 
 class ThousandSchnapsenGame(LegalActionsGame[Card]):

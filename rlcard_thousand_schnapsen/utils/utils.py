@@ -1,4 +1,16 @@
-from rlcard.core import Card
+from rlcard.core import Card as BaseCard
+
+CARDS_IN_SUIT_COUNT = 6
+
+
+class Card(BaseCard):
+    valid_suit = ['S', 'C', 'D', 'H']
+    valid_rank = ['9', 'J', 'Q', 'K', 'T', 'A']
+
+    def __hash__(self) -> int:
+        suit_index = Card.valid_suit.index(self.suit)
+        rank_index = Card.valid_rank.index(self.rank)
+        return rank_index + CARDS_IN_SUIT_COUNT * suit_index
 
 
 def init_standard_deck_starting_with_nine():
@@ -7,7 +19,8 @@ def init_standard_deck_starting_with_nine():
     Returns:
         (list): A list of Card object
     """
-    suit_list = ['S', 'H', 'D', 'C']
-    rank_list = ['A', '9', 'T', 'J', 'Q', 'K']
-    res = [Card(suit, rank) for suit in suit_list for rank in rank_list]
+    res = [
+        Card(suit, rank) for suit in Card.valid_suit
+        for rank in Card.valid_rank
+    ]
     return res
