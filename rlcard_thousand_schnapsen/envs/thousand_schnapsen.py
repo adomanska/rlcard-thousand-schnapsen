@@ -3,6 +3,8 @@ from typing import Dict
 from rlcard.envs import Env
 
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT
+from rlcard_thousand_schnapsen.utils import Card
 
 
 class ThousandSchnapsenEnv(Env):
@@ -33,7 +35,17 @@ class ThousandSchnapsenEnv(Env):
         pass
 
     def _decode_action(self, action_id):
-        pass
+        """ Decode Action id to the action in the game.
+
+        Arg:
+            action_id (int): The id of the action
+
+        Return:
+            (Card): The action that will be passed to the game engine.
+        """
+        suit = Card.valid_suit[action_id // CARDS_PER_SUIT_COUNT]
+        rank = Card.valid_rank[action_id % CARDS_PER_SUIT_COUNT]
+        return Card(suit, rank)
 
     def _get_legal_actions(self):
         pass
