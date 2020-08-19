@@ -1,9 +1,8 @@
 from enum import Enum
-from typing import Tuple, NamedTuple, Any, Optional, Set, List
-
-from rlcard.core import Card
+from typing import Tuple, NamedTuple, Optional, Set, List
 
 from rlcard_thousand_schnapsen.core import *
+from rlcard_thousand_schnapsen.utils import Card
 from .constants import MAX_RANK_VALUE
 
 

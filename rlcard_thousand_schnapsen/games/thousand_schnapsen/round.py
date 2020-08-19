@@ -2,9 +2,10 @@ from typing import Sequence, Tuple, List, Set, Optional
 
 import numpy as np
 
-from rlcard.core import Round, Card
+from rlcard.core import Round
 
 from rlcard_thousand_schnapsen.core import Queen, King
+from rlcard_thousand_schnapsen.utils import Card
 from .player import ThousandSchnapsenPlayer
 from .utils import get_marriage_points, get_context_card_value, get_color
 
@@ -46,6 +47,7 @@ class ThousandSchnapsenRound(Round):
 
         stock.append((game_pointer, card))
         players[game_pointer].hand.remove(card)
+        players[game_pointer].used.append(card)
         next_game_pointer = (game_pointer + 1) % self.num_players
         return next_game_pointer, activated_marriage
 
@@ -75,7 +77,7 @@ class ThousandSchnapsenRound(Round):
 
         player_cards = set(player.hand)
         first_stock_card_str = stock[0][1].suit
-        max_context_value = np.max([
+        max_context_value = max([
             get_context_card_value(card, first_stock_card_str, active_marriage)
             for _, card in stock
         ])

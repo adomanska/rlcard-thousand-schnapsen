@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-from rlcard.core import Card
 
 from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Round, Player
+from rlcard_thousand_schnapsen.utils import Card
 
 
 class TestRound(unittest.TestCase):
@@ -111,8 +111,8 @@ class TestRound(unittest.TestCase):
         stock = [(2, Card(Spades, Ace))]
         active_marriage = Hearts
         expected = [
-            Card(Spades, Ten),
             Card(Spades, Queen),
+            Card(Spades, Ten),
         ]
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)

@@ -3,8 +3,6 @@ from typing import List, Tuple, Optional, Set, Dict, Sequence
 
 import numpy as np
 
-from rlcard.core import Card
-
 from rlcard_thousand_schnapsen.core import LegalActionsGame
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Dealer
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Player
@@ -14,6 +12,7 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_P
     CARDS_COUNT
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import PutCardAction, ActivateMarriageAction,\
     EvaluateRoundAction, Action, ActionType, get_marriage_points
+from rlcard_thousand_schnapsen.utils import Card
 
 
 class ThousandSchnapsenGame(LegalActionsGame[Card]):
@@ -142,6 +141,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                 elif action_type == ActionType.PutCard:
                     player_id, card = data
                     self.players[player_id].hand.append(card)
+                    self.players[player_id].used.remove(card)
                     self.game_pointer = player_id
                     self.stock.pop()
                     break
@@ -176,8 +176,24 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         """
         return self.round_counter > ROUNDS_COUNT
 
-    def get_state(self, player_id) -> Dict:
-        pass
+    def get_state(self, player_id: int) -> Dict:
+        """ Return current game state for player with given id
+        
+        Arg:
+            player_id (int): Player's id
+            
+        Return:
+            (dict): Game state for given player
+        """
+        player_state = self.players[player_id].get_state()
+        player_state['current_player'] = self.game_pointer
+        player_state['used_cards'] = [
+            copy(player.used) for player in self.players
+        ]
+        player_state['stock_cards'] = copy(self.stock)
+        player_state['active_marriage'] = self.active_marriage
+        player_state['used_marriages'] = copy(self.used_marriages)
+        return player_state
 
     def get_legal_actions(self) -> Sequence[Card]:
         """ Calculate and return legal actions according to Thousand Schnapsen rules

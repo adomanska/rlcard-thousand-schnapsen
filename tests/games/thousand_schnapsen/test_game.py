@@ -14,7 +14,7 @@ class TestGame(unittest.TestCase):
         while not game.is_over():
             action = np.random.choice(game.get_legal_actions())
             game.step(action)
-        expected_points_sum = 120 + np.sum(
+        expected_points_sum = 120 + sum(
             get_marriage_points(marriage) for marriage in game.used_marriages)
 
         points_sum = np.sum([player.points for player in game.players])
@@ -41,6 +41,7 @@ class TestGame(unittest.TestCase):
         snap = {
             'points': [player.points for player in game.players],
             'hands': [set(player.hand) for player in game.players],
+            'used': [set(player.used) for player in game.players],
             'stock': copy(game.stock),
             'used_marriages': copy(game.used_marriages),
             'active_marriage': copy(game.active_marriage),

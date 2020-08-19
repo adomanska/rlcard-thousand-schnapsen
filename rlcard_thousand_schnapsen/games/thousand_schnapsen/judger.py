@@ -2,8 +2,9 @@ from typing import Tuple, Sequence, Optional
 
 import numpy as np
 
-from rlcard.core import Judger, Card
+from rlcard.core import Judger
 
+from rlcard_thousand_schnapsen.utils import Card
 from .player import ThousandSchnapsenPlayer as Player
 from .utils import get_context_card_value, get_card_value
 

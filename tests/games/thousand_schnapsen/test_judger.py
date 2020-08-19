@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-from rlcard.core import Card
 
 from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Judger
+from rlcard_thousand_schnapsen.utils import Card
 
 
 class TestJudger(unittest.TestCase):
