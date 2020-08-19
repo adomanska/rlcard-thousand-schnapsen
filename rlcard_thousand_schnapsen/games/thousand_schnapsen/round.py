@@ -5,9 +5,9 @@ import numpy as np
 from rlcard.core import Round
 
 from rlcard_thousand_schnapsen.core import Queen, King
+from rlcard_thousand_schnapsen.utils import Card
 from .player import ThousandSchnapsenPlayer
 from .utils import get_marriage_points, get_context_card_value, get_color
-from ...utils import Card
 
 
 class ThousandSchnapsenRound(Round):

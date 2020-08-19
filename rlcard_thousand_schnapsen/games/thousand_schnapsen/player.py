@@ -1,10 +1,8 @@
-from typing import Dict, Any, List, Tuple, Sequence
+from typing import Dict, Any
 
 import numpy as np
 
 from rlcard.core import Player
-
-from rlcard_thousand_schnapsen.utils import Card
 
 
 class ThousandSchnapsenPlayer(Player):
@@ -26,6 +24,10 @@ class ThousandSchnapsenPlayer(Player):
         pass
 
     def get_state(self) -> Dict[str, Any]:
+        """ Return current game state
+        Return:
+            (dict): Game state
+        """
         state = dict()
         state['cards'] = self.hand
         state['used_cards'] = self.hand

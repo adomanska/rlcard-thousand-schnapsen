@@ -4,6 +4,7 @@ CARDS_IN_SUIT_COUNT = 6
 
 
 class Card(BaseCard):
+    """ Card extension for games with deck starting with 9 """
     valid_suit = ['S', 'C', 'D', 'H']
     valid_rank = ['9', 'J', 'Q', 'K', 'T', 'A']
 

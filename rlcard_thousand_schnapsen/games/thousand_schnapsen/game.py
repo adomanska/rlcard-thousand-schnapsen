@@ -177,6 +177,14 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         return self.round_counter > ROUNDS_COUNT
 
     def get_state(self, player_id: int) -> Dict:
+        """ Return current game state for player with given id
+        
+        Arg:
+            player_id (int): Player's id
+            
+        Return:
+            (dict): Game state for given player
+        """
         # Get opponents indices
         first_player = self.stock[0][0] if len(
             self.stock) > 0 else self.game_pointer
