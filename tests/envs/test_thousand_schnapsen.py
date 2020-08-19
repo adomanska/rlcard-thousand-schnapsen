@@ -1,10 +1,12 @@
 import unittest
 from unittest.mock import MagicMock
 
+import numpy as np
 from ddt import ddt, data, unpack
 
 from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.envs import make
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
 
 
@@ -29,3 +31,17 @@ class TestThousandSchnapsenEnv(unittest.TestCase):
         expected = [2, 10, 17, 19]
 
         self.assertEqual(expected, self.env._get_legal_actions())
+
+    def test_encode_cards_set(self):
+        cards = [
+            Card(Spades, Queen),
+            Card(Clubs, Ten),
+            Card(Diamonds, Ace),
+            Card(Hearts, Jack)
+        ]
+        expected = np.zeros(CARDS_COUNT, dtype=int)
+        expected[[2, 10, 17, 19]] = 1
+
+        result = self.env._encode_cards_set(cards)
+
+        self.assertTrue(np.allclose(expected, result))

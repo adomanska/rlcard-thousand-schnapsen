@@ -1,9 +1,10 @@
-from typing import Dict, List
+from typing import Dict, List, Sequence
 
+import numpy as np
 from rlcard.envs import Env
 
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
 
 
@@ -53,3 +54,9 @@ class ThousandSchnapsenEnv(Env):
             (list): A list of legal actions' id.
         """
         return [action.__hash__() for action in self.game.get_legal_actions()]
+
+    def _encode_cards_set(self, cards: Sequence[Card]) -> np.array:
+        cards_indices = [card.__hash__() for card in cards]
+        code = np.zeros(CARDS_COUNT, dtype=int)
+        code[cards_indices] = 1
+        return code
