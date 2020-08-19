@@ -92,12 +92,12 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                 (int): Next player's id
         """
         # Update state and history
-        self.history.append(PutCardAction((self.game_pointer, card)))
         new_game_pointer, activated_marriage = self.round.proceed_round(
             self.game_pointer, self.players, self.stock, self.used_marriages,
             card)
+        self._update_history(PutCardAction((self.game_pointer, card)))
         if activated_marriage is not None:
-            self.history.append(
+            self._update_history(
                 ActivateMarriageAction(
                     (self.active_marriage, activated_marriage,
                      self.game_pointer)))
@@ -203,6 +203,11 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         """
         return self.round.get_legal_actions(self.stock, self.active_marriage,
                                             self.players[self.game_pointer])
+
+    def _update_history(self, history_item: Action):
+        if not self.allow_step_back:
+            return
+        self.history.append(history_item)
 
 
 # Run random game simulation
