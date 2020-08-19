@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from rlcard.envs import Env
 
@@ -47,5 +47,9 @@ class ThousandSchnapsenEnv(Env):
         rank = Card.valid_rank[action_id % CARDS_PER_SUIT_COUNT]
         return Card(suit, rank)
 
-    def _get_legal_actions(self):
-        pass
+    def _get_legal_actions(self) -> List[int]:
+        """ Get all legal actions for current state.
+        Returns:
+            (list): A list of legal actions' id.
+        """
+        return [action.__hash__() for action in self.game.get_legal_actions()]

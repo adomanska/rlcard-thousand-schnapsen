@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 
 from ddt import ddt, data, unpack
 
@@ -9,10 +10,22 @@ from rlcard_thousand_schnapsen.utils import Card
 
 @ddt
 class TestThousandSchnapsenEnv(unittest.TestCase):
+    env = make('thousand-schnapsen', config={'seed': 0})
+
     @data((2, Card(Spades, Queen)), (19, Card(Hearts, Jack)),
           (10, Card(Clubs, Ten)), (17, Card(Diamonds, Ace)))
     @unpack
     def test_decode_action(self, action_id: int, card: Card):
-        env = make('thousand-schnapsen', config={'seed': 0})
-        decoded_action = env._decode_action(action_id)
+        decoded_action = self.env._decode_action(action_id)
         self.assertEqual(card, decoded_action)
+
+    def test_get_legal_actions(self):
+        self.env.game.get_legal_actions = MagicMock(return_value=[
+            Card(Spades, Queen),
+            Card(Clubs, Ten),
+            Card(Diamonds, Ace),
+            Card(Hearts, Jack)
+        ])
+        expected = [2, 10, 17, 19]
+
+        self.assertEqual(expected, self.env._get_legal_actions())
