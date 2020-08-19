@@ -111,7 +111,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             self.players[winner_id].points += points
             self.game_pointer = winner_id
             self.round_counter += 1
-            self.history.append(
+            self._update_history(
                 EvaluateRoundAction((winner_id, points, copy(self.stock))))
             self.stock.clear()
 
@@ -187,14 +187,33 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             (dict): Game state for given player
         """
         player_state = self.players[player_id].get_state()
-        player_state['current_player'] = self.game_pointer
-        player_state['used_cards'] = [
-            copy(player.used) for player in self.players
-        ]
-        player_state['stock_cards'] = copy(self.stock)
-        player_state['active_marriage'] = self.active_marriage
-        player_state['used_marriages'] = copy(self.used_marriages)
-        return player_state
+        public_state = self._get_public_state()
+
+        return {**player_state, **public_state}
+
+    def get_perfect_information(self) -> Dict:
+        """ Return complete game state (with private information)
+        Return:
+            (dict): Complete game state
+        """
+        public_state = self._get_public_state()
+        return {
+            **public_state, 'players_hand':
+            [copy(player.hand) for player in self.players]
+        }
+
+    def _get_public_state(self) -> Dict:
+        """ Return current public game state
+        Return:
+            (dict): Public game state
+        """
+        return {
+            'current_player': self.game_pointer,
+            'players_used': [copy(player.used) for player in self.players],
+            'stock': copy(self.stock),
+            'active_marriage': self.active_marriage,
+            'used_marriages': copy(self.used_marriages),
+        }
 
     def get_legal_actions(self) -> Sequence[Card]:
         """ Calculate and return legal actions according to Thousand Schnapsen rules
@@ -204,7 +223,16 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         return self.round.get_legal_actions(self.stock, self.active_marriage,
                                             self.players[self.game_pointer])
 
+    def get_payoffs(self) -> Sequence[int]:
+        """ Return the payoffs of the game
+        Return:
+            (Sequence[int]): Each entry corresponds to the payoff of one player
+        """
+        return self.judger.judge_game(self.players)
+
     def _update_history(self, history_item: Action):
+        """ Check if history needs to be updated and if yes, do update
+        """
         if not self.allow_step_back:
             return
         self.history.append(history_item)

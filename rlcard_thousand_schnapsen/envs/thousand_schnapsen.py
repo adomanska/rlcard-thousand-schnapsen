@@ -13,10 +13,18 @@ class ThousandSchnapsenEnv(Env):
         super().__init__(config)
 
     def get_payoffs(self):
-        pass
+        """ Get the payoff of a game
+        Returns:
+           payoffs (list): list of payoffs
+        """
+        return self.game.get_payoffs()
 
-    def get_perfect_information(self):
-        pass
+    def get_perfect_information(self) -> Dict:
+        """ Get the perfect information of the current state
+        Return:
+            (dict): A dictionary of all the perfect information of the current state
+        """
+        return self.game.get_perfect_information()
 
     def _load_model(self):
         pass

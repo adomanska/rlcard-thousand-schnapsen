@@ -30,5 +30,5 @@ class ThousandSchnapsenPlayer(Player):
             (dict): Game state
         """
         state = dict()
-        state['cards'] = copy(self.hand)
+        state['hand'] = copy(self.hand)
         return state
