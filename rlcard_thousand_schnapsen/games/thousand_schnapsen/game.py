@@ -29,9 +29,10 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
     active_marriage: Optional[str]
     used_marriages: Set[str]
 
-    def __init__(self):
+    def __init__(self, allow_step_back: bool = False):
         """ Initialize the class ThousandSchnapsenGame
         """
+        self.allow_step_back = allow_step_back
         self.np_random = np.random.RandomState()
         self.num_players = 3
 
