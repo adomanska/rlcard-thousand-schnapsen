@@ -185,21 +185,14 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         Return:
             (dict): Game state for given player
         """
-        # Get opponents indices
-        first_player = self.stock[0][0] if len(
-            self.stock) > 0 else self.game_pointer
-        indices = [(first_player + i) % self.num_players
-                   for i in range(self.num_players)]
-        indices = [index for index in indices if index != player_id]
-
         player_state = self.players[player_id].get_state()
         player_state['current_player'] = self.game_pointer
-        player_state['other_used_cards'] = [
-            self.players[index].used for index in indices
+        player_state['used_cards'] = [
+            copy(player.used) for player in self.players
         ]
-        player_state['stock_cards'] = [card for _, card in self.stock]
+        player_state['stock_cards'] = copy(self.stock)
         player_state['active_marriage'] = self.active_marriage
-        player_state['used_marriages'] = self.used_marriages
+        player_state['used_marriages'] = copy(self.used_marriages)
         return player_state
 
     def get_legal_actions(self) -> Sequence[Card]:

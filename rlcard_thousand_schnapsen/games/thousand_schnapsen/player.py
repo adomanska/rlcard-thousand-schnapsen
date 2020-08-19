@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Dict, Any
 
 import numpy as np
@@ -29,6 +30,5 @@ class ThousandSchnapsenPlayer(Player):
             (dict): Game state
         """
         state = dict()
-        state['cards'] = self.hand
-        state['used_cards'] = self.hand
+        state['cards'] = copy(self.hand)
         return state
