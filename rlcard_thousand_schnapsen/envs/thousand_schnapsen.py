@@ -1,4 +1,4 @@
-from typing import Dict, List, Sequence, Tuple, Optional, FrozenSet
+from typing import Dict, List, Sequence, Tuple, Optional, FrozenSet, Union
 
 import numpy as np
 from rlcard.envs import Env
@@ -95,22 +95,21 @@ class ThousandSchnapsenEnv(Env):
     def _encode(self, code: np.array, chunk: np.array, start_index: int,
                 length: int) -> int:
         end_index = start_index + length
-        code[chunk + start_index] = 1
+        code[start_index:end_index][chunk] = 1
         return end_index
 
-    def _encode_cards_set(self, cards: Sequence[Card]) -> np.array:
-        cards_indices = [card.__hash__() for card in cards]
-        return np.array(cards_indices, dtype=int)
+    def _encode_cards_set(self, cards: Sequence[Card]) -> List[int]:
+        return [card.__hash__() for card in cards]
 
-    def _encode_card(self, card: Optional[Card]) -> np.array:
+    def _encode_card(self, card: Optional[Card]) -> Union[List[int], int]:
         if card is None:
-            return np.array([], dtype=int)
+            return []
         return card.__hash__()
 
-    def _encode_marriages(self, suits: FrozenSet[str]) -> np.array:
+    def _encode_marriages(self, suits: FrozenSet[str]) -> List[int]:
         return SUIT_SET_CODES[suits]
 
-    def _encode_marriage(self, suit: Optional[str]) -> np.array:
+    def _encode_marriage(self, suit: Optional[str]) -> List[int]:
         if suit is None:
             return EMPTY_SUIT
         return SUIT_CODES[suit]
