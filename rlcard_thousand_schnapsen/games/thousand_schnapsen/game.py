@@ -199,7 +199,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         public_state = self._get_public_state()
         return {
             **public_state, 'players_hand':
-            [copy(player.hand) for player in self.players]
+            [player.hand for player in self.players]
         }
 
     def _get_public_state(self) -> Dict:
@@ -209,10 +209,10 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         """
         return {
             'current_player': self.game_pointer,
-            'players_used': [copy(player.used) for player in self.players],
-            'stock': copy(self.stock),
+            'players_used': [player.used for player in self.players],
+            'stock': self.stock,
             'active_marriage': self.active_marriage,
-            'used_marriages': copy(self.used_marriages),
+            'used_marriages': frozenset(self.used_marriages),
         }
 
     def get_legal_actions(self) -> Sequence[Card]:

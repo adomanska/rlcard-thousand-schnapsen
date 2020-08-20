@@ -1,8 +1,9 @@
 from enum import Enum, auto
 import time
-from typing import Optional, Tuple, TypeVar
+from typing import Optional, Tuple, TypeVar, Union
 
 import numpy as np
+from rlcard.envs import Env
 
 from rlcard_thousand_schnapsen.core import LegalActionsGame
 
@@ -15,7 +16,7 @@ class TraversalMode(Enum):
 T = TypeVar('T')
 
 
-def perform_monte_carlo_traversal(game: LegalActionsGame[T],
+def perform_monte_carlo_traversal(game: Union[LegalActionsGame[T], Env],
                                   player_id: int) -> int:
     if game.is_over():
         return 1
@@ -31,7 +32,7 @@ def perform_monte_carlo_traversal(game: LegalActionsGame[T],
     return nodes_count + 1
 
 
-def perform_complete_traversal(game: LegalActionsGame[T]) -> int:
+def perform_complete_traversal(game: Union[LegalActionsGame[T], Env]) -> int:
     if game.is_over():
         return 1
     nodes_count = 0
@@ -45,7 +46,7 @@ def perform_complete_traversal(game: LegalActionsGame[T]) -> int:
 
 
 def measure_traversal_time(
-        game: LegalActionsGame[T],
+        game: Union[LegalActionsGame[T], Env],
         mode: TraversalMode,
         player_id: Optional[int] = None) -> Tuple[float, int]:
     nodes_count = 0

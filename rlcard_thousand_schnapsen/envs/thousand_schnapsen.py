@@ -1,4 +1,4 @@
-from typing import Dict, List, Sequence, Tuple, Optional, Set
+from typing import Dict, List, Sequence, Tuple, Optional, FrozenSet
 
 import numpy as np
 from rlcard.envs import Env
@@ -6,6 +6,7 @@ from rlcard.envs import Env
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
+from .utils import OPPONENTS_INDICES, SUIT_CODES, SUIT_SET_CODES, EMPTY_SUIT
 
 
 class ThousandSchnapsenEnv(Env):
@@ -39,17 +40,11 @@ class ThousandSchnapsenEnv(Env):
         hand: List[Card] = state['hand']
         players_used: Sequence[List[Card]] = state['players_used']
         active_marriage: Optional[str] = state['active_marriage']
-        used_marriages: Set[str] = state['used_marriages']
+        used_marriages: FrozenSet[str] = state['used_marriages']
 
         first_player_id = stock[0][0] if len(stock) > 0 else current_player
-        opponents_indices = [
-            (first_player_id + i) % self.game.get_player_num()
-            for i in range(self.game.get_player_num())
-        ]
-        opponents_indices = [
-            player_id for player_id in opponents_indices
-            if player_id != current_player
-        ]
+        opponents_indices = self._get_opponents_indices(
+            current_player, first_player_id)
 
         obs = np.zeros(self.state_shape[0], dtype=int)
         start_index = 0
@@ -100,33 +95,29 @@ class ThousandSchnapsenEnv(Env):
     def _encode(self, code: np.array, chunk: np.array, start_index: int,
                 length: int) -> int:
         end_index = start_index + length
-        code[start_index:end_index] = chunk
+        code[chunk + start_index] = 1
         return end_index
 
     def _encode_cards_set(self, cards: Sequence[Card]) -> np.array:
         cards_indices = [card.__hash__() for card in cards]
-        code = np.zeros(CARDS_COUNT, dtype=int)
-        code[cards_indices] = 1
-        return code
+        return np.array(cards_indices, dtype=int)
 
     def _encode_card(self, card: Optional[Card]) -> np.array:
-        code = np.zeros(CARDS_COUNT, dtype=int)
         if card is None:
-            return code
-        card_index = card.__hash__()
-        code[card_index] = 1
-        return code
+            return np.array([], dtype=int)
+        return card.__hash__()
 
-    def _encode_marriages(self, suits: Set[str]) -> np.array:
-        suits_indices = [Card.valid_suit.index(suit) for suit in suits]
-        code = np.zeros(SUITS_COUNT, dtype=int)
-        code[suits_indices] = 1
-        return code
+    def _encode_marriages(self, suits: FrozenSet[str]) -> np.array:
+        return SUIT_SET_CODES[suits]
 
     def _encode_marriage(self, suit: Optional[str]) -> np.array:
-        code = np.zeros(SUITS_COUNT, dtype=int)
         if suit is None:
-            return code
-        suit_index = Card.valid_suit.index(suit)
-        code[suit_index] = 1
-        return code
+            return EMPTY_SUIT
+        return SUIT_CODES[suit]
+
+    def _get_opponents_indices(self, current_player: int,
+                               first_player: int) -> Sequence[int]:
+        return OPPONENTS_INDICES[first_player][current_player]
+
+    def get_legal_actions(self):
+        return self._get_legal_actions()
