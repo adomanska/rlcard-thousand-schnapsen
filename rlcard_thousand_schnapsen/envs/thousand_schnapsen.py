@@ -6,7 +6,7 @@ from rlcard.envs import Env
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
-from .utils import OPPONENTS_INDICES, SUIT_CODES, SUIT_SET_CODES, EMPTY_SUIT
+from .utils import OPPONENTS_INDICES
 
 
 class ThousandSchnapsenEnv(Env):
@@ -107,12 +107,12 @@ class ThousandSchnapsenEnv(Env):
         return card.__hash__()
 
     def _encode_marriages(self, suits: FrozenSet[str]) -> List[int]:
-        return SUIT_SET_CODES[suits]
+        return [Card.valid_suit.index(suit) for suit in suits]
 
     def _encode_marriage(self, suit: Optional[str]) -> List[int]:
         if suit is None:
-            return EMPTY_SUIT
-        return SUIT_CODES[suit]
+            return []
+        return Card.valid_suit.index(suit)
 
     def _get_opponents_indices(self, current_player: int,
                                first_player: int) -> Sequence[int]:

@@ -6,7 +6,6 @@ from ddt import ddt, data, unpack
 
 from rlcard_thousand_schnapsen.core import *
 from rlcard_thousand_schnapsen.envs import make
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_COUNT, SUITS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
 
 
@@ -42,58 +41,54 @@ class TestThousandSchnapsenEnv(unittest.TestCase):
             Card(Diamonds, Ace),
             Card(Hearts, Jack)
         ]
-        expected = np.zeros(CARDS_COUNT, dtype=int)
-        expected[[2, 10, 17, 19]] = 1
+        expected = [2, 10, 17, 19]
 
         result = self.env._encode_cards_set(cards)
 
-        self.assertTrue(np.allclose(expected, result))
+        self.assertSetEqual(set(expected), set(result))
 
     def test_encode_card_when_card_is_none(self):
-        expected = np.zeros(CARDS_COUNT, dtype=int)
+        expected = []
 
         result = self.env._encode_card(None)
 
-        self.assertTrue(np.allclose(expected, result))
+        self.assertSetEqual(set(expected), set(result))
 
     def test_encode_card_when_card_is_defined(self):
-        expected = np.zeros(CARDS_COUNT, dtype=int)
-        expected[10] = 1
+        expected = 10
 
         result = self.env._encode_card(Card(Clubs, Ten))
 
-        self.assertTrue(np.allclose(expected, result))
+        self.assertEqual(expected, result)
 
     def test_encode_marriage_when_suit_is_none(self):
-        expected = np.zeros(SUITS_COUNT, dtype=int)
+        expected = []
 
         result = self.env._encode_marriage(None)
 
-        self.assertTrue(np.allclose(expected, result))
+        self.assertSetEqual(set(expected), set(result))
 
     def test_encode_marriage_when_suit_is_defined(self):
-        expected = np.zeros(SUITS_COUNT, dtype=int)
-        expected[2] = 1
+        expected = 2
 
         result = self.env._encode_marriage(Diamonds)
 
-        self.assertTrue(np.allclose(expected, result))
+        self.assertEqual(expected, result)
 
     def test_encode_marriages(self):
-        expected = np.zeros(SUITS_COUNT, dtype=int)
-        expected[[1, 3]] = 1
+        expected = [1, 3]
 
         result = self.env._encode_marriages({Clubs, Hearts})
 
-        self.assertTrue(np.allclose(expected, result))
+        self.assertSetEqual(set(expected), set(result))
 
     def test_encode(self):
         code = np.zeros(10, dtype=int)
-        chunk = np.ones(4, dtype=int)
+        chunk = [1, 2]
         start_index = 2
         length = 4
         expected = np.zeros(10, dtype=int)
-        expected[2:6] = 1
+        expected[[3, 4]] = 1
 
         end_index = self.env._encode(code, chunk, start_index, length)
 
