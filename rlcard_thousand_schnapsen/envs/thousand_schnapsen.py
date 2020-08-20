@@ -15,6 +15,8 @@ class ThousandSchnapsenEnv(Env):
         self.name = 'thousand-schnapsen'
         self.game = Game()
         self.state_shape = [6 * CARDS_COUNT + 2 * SUITS_COUNT]
+        self.history = []
+        self.legal_actions = None
         super().__init__(config)
 
     def get_payoffs(self):
@@ -31,12 +33,27 @@ class ThousandSchnapsenEnv(Env):
         """
         return self.game.get_perfect_information()
 
+    def step_back(self):
+        if not self.allow_step_back:
+            raise Exception(
+                'Step back is off. To use step_back, please set allow_step_back=True in rlcard.make'
+            )
+
+        if not self.game.step_back():
+            return False
+
+        player_id = self.get_player_id()
+        state = self.history.pop()
+        self.legal_actions = state['legal_actions']
+
+        return state, player_id
+
     def _load_model(self):
         pass
 
     def _extract_state(self, state):
-        stock: List[Tuple[int, Card]] = state['stock']
         current_player: int = state['current_player']
+        stock: List[Tuple[int, Card]] = state['stock']
         hand: List[Card] = state['hand']
         players_used: Sequence[List[Card]] = state['players_used']
         active_marriage: Optional[str] = state['active_marriage']
@@ -70,7 +87,10 @@ class ThousandSchnapsenEnv(Env):
         self._encode(obs, self._encode_marriages(used_marriages), start_index,
                      SUITS_COUNT)
 
-        return {'obs': obs, 'legal_actions': self._get_legal_actions()}
+        self.legal_actions = self._get_legal_actions()
+        state = {'obs': obs, 'legal_actions': self.legal_actions}
+        self.history.append(state)
+        return state
 
     def _decode_action(self, action_id):
         """ Decode Action id to the action in the game.
@@ -119,4 +139,4 @@ class ThousandSchnapsenEnv(Env):
         return OPPONENTS_INDICES[first_player][current_player]
 
     def get_legal_actions(self):
-        return self._get_legal_actions()
+        return self.legal_actions
