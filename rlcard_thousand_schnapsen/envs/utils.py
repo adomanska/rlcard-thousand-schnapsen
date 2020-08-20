@@ -1,5 +1,3 @@
-from rlcard_thousand_schnapsen.core import *
-
 OPPONENTS_INDICES = {
     0: {
         0: [1, 2],
