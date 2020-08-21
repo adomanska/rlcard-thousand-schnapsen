@@ -1,3 +1,4 @@
 rlcard>=0.2.5
 yapf>=0.30.0
 progressbar2>=3.51.4
+ddt>=1.4.1

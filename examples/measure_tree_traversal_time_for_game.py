@@ -4,7 +4,7 @@ from progressbar import progressbar
 
 if __name__ == "__main__":
     N = 100
-    game = Game()
+    game = Game(allow_step_back=True)
     total_elapsed_time = 0
     total_nodes_count = 0
     for _ in progressbar(range(N)):

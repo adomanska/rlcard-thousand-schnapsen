@@ -22,9 +22,10 @@ class TestGame(unittest.TestCase):
         for player in game.players:
             self.assertEqual(0, len(player.hand))
         self.assertEqual(expected_points_sum, points_sum)
+        self.assertEqual(0, len(game.history))
 
     def test_step_back(self):
-        game = Game()
+        game = Game(allow_step_back=True)
         game.init_game()
         expected_history = []
         while not game.is_over():
