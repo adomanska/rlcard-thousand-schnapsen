@@ -112,31 +112,87 @@ class ThousandSchnapsenEnv(Env):
         """
         return [action.__hash__() for action in self.game.get_legal_actions()]
 
-    def _encode(self, code: np.array, chunk: np.array, start_index: int,
-                length: int) -> int:
+    def _encode(self, code: np.array, chunk: Union[List[int], int],
+                start_index: int, length: int) -> int:
+        """ Add new chunk to state code
+        
+        Args:
+            code (np.array): Current code
+            chunk (Union[List[int], int]): Chunk to be encoded
+            start_index (int): Start index
+            length (int): Length of chunk
+            
+        Returns:
+            (int): End index
+        """
         end_index = start_index + length
         code[start_index:end_index][chunk] = 1
         return end_index
 
     def _encode_cards_set(self, cards: Sequence[Card]) -> List[int]:
+        """ Get chunk encoding cards set
+        
+        Arg:
+            cards (Sequence[Card]): Cards to be encoded
+            
+        Return:
+            (List[int]): Code
+        """
         return [card.__hash__() for card in cards]
 
     def _encode_card(self, card: Optional[Card]) -> Union[List[int], int]:
+        """ Get chunk encoding card
+
+        Arg:
+            card (Optional[Card]): Card to be encoded
+
+        Return:
+            (Union[List[int], int]): Code
+        """
         if card is None:
             return []
         return card.__hash__()
 
     def _encode_marriages(self, suits: FrozenSet[str]) -> List[int]:
+        """ Get chunk encoding suits
+
+        Arg:
+            suits (FrozenSet[str]): Suits to be encoded
+
+        Return:
+            (List[int]): Code
+        """
         return [Card.valid_suit.index(suit) for suit in suits]
 
-    def _encode_marriage(self, suit: Optional[str]) -> List[int]:
+    def _encode_marriage(self, suit: Optional[str]) -> Union[List[int], int]:
+        """ Get chunk encoding suit
+
+        Arg:
+            suit (Optional[str]): Card to be encoded
+
+        Return:
+            (Union[List[int], int]): Code
+        """
         if suit is None:
             return []
         return Card.valid_suit.index(suit)
 
     def _get_opponents_indices(self, current_player: int,
                                first_player: int) -> Sequence[int]:
+        """ Get opponents indices according to current state
+
+        Arg:
+            current_player (int): Current player's id
+            first_player (int): First player's id
+
+        Return:
+            (Sequence[int]): Opponents' ids
+        """
         return OPPONENTS_INDICES[first_player][current_player]
 
-    def get_legal_actions(self):
+    def get_legal_actions(self) -> Sequence[int]:
+        """ Get last calculated legal actions
+        Return:
+           (Sequence[int]): Legal actions
+        """
         return self.legal_actions
