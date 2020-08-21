@@ -124,6 +124,8 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         Return:
             (bool): True if the step back is done successfully, otherwise False
         """
+        if not self.allow_step_back:
+            raise Exception('Step back is not allowed')
         if len(self.history) > 0:
             while True:
                 history_action = self.history.pop()
