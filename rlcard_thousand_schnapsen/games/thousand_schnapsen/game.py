@@ -143,7 +143,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                         activated_marriage)
                 elif action_type == ActionType.PutCard:
                     player_id, card = data
-                    self.players[player_id].hand.append(card)
+                    self.players[player_id].hand.add(card)
                     self.players[player_id].used.remove(card)
                     self.game_pointer = player_id
                     self.stock.pop()

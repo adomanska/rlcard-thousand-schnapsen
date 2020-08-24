@@ -56,13 +56,13 @@ class TestRound(unittest.TestCase):
         np_random = np.random.RandomState()
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
-        cards = [
+        cards = {
             Card(Spades, Ten),
             Card(Diamonds, Nine),
             Card(Hearts, Queen),
             Card(Spades, King),
             Card(Clubs, Ace),
-        ]
+        }
         player.hand = cards
         stock = []
         active_marriage = None
@@ -70,87 +70,87 @@ class TestRound(unittest.TestCase):
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 
-        self.assertSequenceEqual(expected, result)
+        self.assertSetEqual(expected, result)
 
     def test_get_legal_actions_when_can_put_same_suit_and_beat(self):
         num_players = 3
         np_random = np.random.RandomState()
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
-        cards = [
+        cards = {
             Card(Spades, Ten),
             Card(Diamonds, Nine),
             Card(Hearts, Queen),
             Card(Spades, Queen),
             Card(Clubs, Ace),
-        ]
+        }
         player.hand = cards
         stock = [(2, Card(Spades, King))]
         active_marriage = None
-        expected = [
+        expected = {
             Card(Spades, Ten),
-        ]
+        }
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 
-        self.assertSequenceEqual(expected, result)
+        self.assertSetEqual(expected, result)
 
     def test_get_legal_actions_when_can_put_same_suit_but_not_beat(self):
         num_players = 3
         np_random = np.random.RandomState()
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
-        cards = [
+        cards = {
             Card(Spades, Ten),
             Card(Diamonds, Nine),
             Card(Hearts, Queen),
             Card(Spades, Queen),
             Card(Clubs, Ace),
-        ]
+        }
         player.hand = cards
         stock = [(2, Card(Spades, Ace))]
         active_marriage = Hearts
-        expected = [
+        expected = {
             Card(Spades, Queen),
             Card(Spades, Ten),
-        ]
+        }
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 
-        self.assertSequenceEqual(expected, result)
+        self.assertSetEqual(expected, result)
 
     def test_get_legal_actions_when_can_beat_with_active_marriage(self):
         num_players = 3
         np_random = np.random.RandomState()
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
-        cards = [
+        cards = {
             Card(Spades, Ten),
             Card(Diamonds, Nine),
             Card(Hearts, Queen),
             Card(Spades, Queen),
-        ]
+        }
         player.hand = cards
         stock = [(2, Card(Clubs, Ace))]
         active_marriage = Hearts
-        expected = [
+        expected = {
             Card(Hearts, Queen),
-        ]
+        }
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 
-        self.assertSequenceEqual(expected, result)
+        self.assertSetEqual(expected, result)
 
     def test_get_legal_actions_when_cannot_put_same_suit_nor_beat(self):
         num_players = 3
         np_random = np.random.RandomState()
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
-        cards = [
+        cards = {
             Card(Spades, Ten),
             Card(Diamonds, Nine),
             Card(Spades, Queen),
-        ]
+        }
         player.hand = cards
         stock = [(2, Card(Clubs, Ace))]
         active_marriage = Hearts
@@ -158,7 +158,7 @@ class TestRound(unittest.TestCase):
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 
-        self.assertSequenceEqual(expected, result)
+        self.assertSetEqual(expected, result)
 
     def test_get_legal_actions_when_active_marriage_equal_first_card_suit(
             self):
@@ -166,17 +166,17 @@ class TestRound(unittest.TestCase):
         np_random = np.random.RandomState()
         cur_round = Round(num_players, np_random)
         player = Player(0, np_random)
-        cards = [
+        cards = {
             Card(Spades, Ten),
             Card(Diamonds, Nine),
             Card(Spades, Queen),
             Card(Clubs, Ten)
-        ]
+        }
         player.hand = cards
         stock = [(2, Card(Clubs, Ace))]
         active_marriage = Clubs
-        expected = [Card(Clubs, Ten)]
+        expected = {Card(Clubs, Ten)}
 
         result = cur_round.get_legal_actions(stock, active_marriage, player)
 
-        self.assertSequenceEqual(expected, result)
+        self.assertSetEqual(expected, result)

@@ -3,7 +3,7 @@ import numpy as np
 from rlcard.core import Dealer
 
 from rlcard_thousand_schnapsen.utils import init_standard_deck_starting_with_nine
-from .player import Player
+from .player import ThousandSchnapsenPlayer
 from .errors import ImpossibleCardsDealException
 
 
@@ -23,7 +23,7 @@ class ThousandSchnapsenDealer(Dealer):
         self.np_random.shuffle(shuffled_deck)
         self.deck = list(shuffled_deck)
 
-    def deal_cards(self, player: Player, num: int):
+    def deal_cards(self, player: ThousandSchnapsenPlayer, num: int):
         """ Deal some cards from deck to one player
         Args:
             player (Player): The object of ThousandSchnapsenPlayer
@@ -32,4 +32,4 @@ class ThousandSchnapsenDealer(Dealer):
         if len(self.deck) < num:
             raise ImpossibleCardsDealException(len(self.deck), num)
         for _ in range(num):
-            player.hand.append(self.deck.pop())
+            player.hand.add(self.deck.pop())

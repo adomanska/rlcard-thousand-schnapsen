@@ -1,6 +1,7 @@
 from enum import Enum, auto
 import time
 from typing import Optional, Tuple, TypeVar, Union
+import random
 
 import numpy as np
 from rlcard.envs import Env
@@ -23,7 +24,7 @@ def perform_monte_carlo_traversal(game: Union[LegalActionsGame[T], Env],
     nodes_count = 0
     legal_actions = game.get_legal_actions()
     if game.get_player_id() != player_id:
-        legal_actions = np.random.choice(legal_actions, 1)
+        legal_actions = random.sample(legal_actions, 1)
 
     for action in legal_actions:
         game.step(action)
