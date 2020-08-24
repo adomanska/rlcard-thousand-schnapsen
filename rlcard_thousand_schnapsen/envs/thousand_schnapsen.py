@@ -6,8 +6,8 @@ from rlcard.envs import Env
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import get_marriage_points
 from .utils import OPPONENTS_INDICES
-from ..games.thousand_schnapsen.utils import get_marriage_points
 
 
 class ThousandSchnapsenEnv(Env):
@@ -18,7 +18,10 @@ class ThousandSchnapsenEnv(Env):
         self.state_shape = [6 * CARDS_COUNT + 2 * SUITS_COUNT]
         self.history = []
         self.legal_actions = None
-        self._force_zero_sum = config['force_zero_sum']
+        if 'force_zero_sum' in config:
+            self._force_zero_sum = config['force_zero_sum']
+        else:
+            self._force_zero_sum = False
         super().__init__(config)
 
     def get_payoffs(self):

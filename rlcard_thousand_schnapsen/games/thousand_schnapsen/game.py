@@ -222,10 +222,8 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         Return:
             (Sequence[Card]): Cards that can be put on the stock
         """
-        actions = self.round.get_legal_actions(self.stock,
-                                               self.active_marriage,
-                                               self.players[self.game_pointer])
-        return actions
+        return self.round.get_legal_actions(self.stock, self.active_marriage,
+                                            self.players[self.game_pointer])
 
     def get_payoffs(self) -> Sequence[int]:
         """ Return the payoffs of the game
