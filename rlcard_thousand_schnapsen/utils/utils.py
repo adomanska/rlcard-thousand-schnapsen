@@ -39,11 +39,13 @@ def tournament(env, num):
         A list of average payoffs for each player
     """
     payoffs = np.zeros(env.player_num, dtype=int)
+    wins = np.zeros(env.player_num, dtype=int)
     counter = 0
     while counter < num:
         _, _payoffs = env.run(is_training=False)
         payoffs += _payoffs
         counter += 1
+        wins[np.argmax(_payoffs)] += 1
     for i, _ in enumerate(payoffs):
         payoffs[i] /= counter
-    return payoffs
+    return payoffs, wins

@@ -7,6 +7,7 @@ from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
 from rlcard_thousand_schnapsen.utils import Card
 from .utils import OPPONENTS_INDICES
+from ..games.thousand_schnapsen.utils import get_marriage_points
 
 
 class ThousandSchnapsenEnv(Env):
@@ -17,6 +18,7 @@ class ThousandSchnapsenEnv(Env):
         self.state_shape = [6 * CARDS_COUNT + 2 * SUITS_COUNT]
         self.history = []
         self.legal_actions = None
+        self._force_zero_sum = config['force_zero_sum']
         super().__init__(config)
 
     def get_payoffs(self):
@@ -24,7 +26,18 @@ class ThousandSchnapsenEnv(Env):
         Returns:
            (list): list of payoffs
         """
-        return np.array(self.game.get_payoffs())
+        payoffs = np.array(self.game.get_payoffs())
+        if self._force_zero_sum:
+            not_used_marriages = set(
+                Card.valid_suit) - self.game.used_marriages
+            rest_points = sum([
+                get_marriage_points(marriage)
+                for marriage in not_used_marriages
+            ])
+            payoffs += rest_points // self.player_num
+            winner = np.argmax(payoffs)
+            payoffs[winner] += rest_points % self.player_num
+        return payoffs
 
     def get_perfect_information(self) -> Dict:
         """ Get the perfect information of the current state

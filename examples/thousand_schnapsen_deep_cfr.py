@@ -12,8 +12,17 @@ from rlcard_thousand_schnapsen.agents import DeepCFR
 from rlcard_thousand_schnapsen.utils import tournament
 
 # Make environment
-env = make('thousand-schnapsen', config={'seed': 0, 'allow_step_back': True})
-eval_env = make('thousand-schnapsen', config={'seed': 0})
+env = make('thousand-schnapsen',
+           config={
+               'seed': 0,
+               'allow_step_back': True,
+               'force_zero_sum': True
+           })
+eval_env = make('thousand-schnapsen',
+                config={
+                    'seed': 0,
+                    'force_zero_sum': True
+                })
 
 # Set the iterations numbers and how frequently we evaluate the performance
 evaluate_every = 1
@@ -61,8 +70,9 @@ with tf.Session() as sess:
 
         # Evaluate the performance. Play with random agents.
         if episode % evaluate_every == 0:
-            logger.log_performance(env.timestep,
-                                   tournament(eval_env, evaluate_num)[0])
+            payoffs, wins = tournament(eval_env, evaluate_num)
+            logger.log_performance(env.timestep, payoffs[0])
+            print(f'Win rate: {(wins[0] * 100) / evaluate_num}')
 
     # Close files in the logger
     logger.close_files()
