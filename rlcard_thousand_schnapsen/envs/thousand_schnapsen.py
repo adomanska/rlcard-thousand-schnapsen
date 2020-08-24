@@ -5,7 +5,7 @@ from rlcard.envs import Env
 
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
-from rlcard_thousand_schnapsen.utils import Card
+from rlcard_thousand_schnapsen.utils import Card, init_standard_deck_starting_with_nine
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import get_marriage_points
 from .utils import OPPONENTS_INDICES
 
@@ -18,11 +18,25 @@ class ThousandSchnapsenEnv(Env):
         self.state_shape = [6 * CARDS_COUNT + 2 * SUITS_COUNT]
         self.history = []
         self.legal_actions = None
+        self.possible_cards = None
+        self.certain_cards = None
         if 'force_zero_sum' in config:
             self._force_zero_sum = config['force_zero_sum']
         else:
             self._force_zero_sum = False
         super().__init__(config)
+
+    def reset(self):
+        self.possible_cards = [
+            set(init_standard_deck_starting_with_nine())
+            for _ in range(self.player_num)
+        ]
+        self.certain_cards = [set() for _ in range(self.player_num)]
+        return super().reset()
+
+    def step(self, action: int, raw_action=False):
+        self._reason_about_cards(action)
+        return super().step(action, raw_action)
 
     def get_payoffs(self):
         """ Get the payoff of a game
@@ -107,6 +121,9 @@ class ThousandSchnapsenEnv(Env):
         state = {'obs': obs, 'legal_actions': self.legal_actions}
         self.history.append(state)
         return state
+
+    def _reason_about_cards(self, action: int):
+        pass
 
     def _decode_action(self, action_id):
         """ Decode Action id to the action in the game.

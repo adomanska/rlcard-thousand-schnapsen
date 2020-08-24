@@ -116,6 +116,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             self.stock.clear()
 
         player_state = self.get_state(self.game_pointer)
+        player_state['new_trump'] = activated_marriage is not None
 
         return player_state, self.game_pointer
 
@@ -217,7 +218,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             'used_marriages': frozenset(self.used_marriages),
         }
 
-    def get_legal_actions(self) -> Sequence[Card]:
+    def get_legal_actions(self) -> Set[Card]:
         """ Calculate and return legal actions according to Thousand Schnapsen rules
         Return:
             (Sequence[Card]): Cards that can be put on the stock
