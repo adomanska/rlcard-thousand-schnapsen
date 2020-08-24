@@ -1,3 +1,4 @@
+import numpy as np
 from rlcard.core import Card as BaseCard
 
 CARDS_IN_SUIT_COUNT = 6
@@ -25,3 +26,26 @@ def init_standard_deck_starting_with_nine():
         for rank in Card.valid_rank
     ]
     return res
+
+
+def tournament(env, num):
+    """ Evaluate he performance of the agents in the environment
+
+    Args:
+        env (Env class): The environment to be evaluated.
+        num (int): The number of games to play.
+
+    Returns:
+        A list of average payoffs for each player
+    """
+    payoffs = np.zeros(env.player_num, dtype=int)
+    wins = np.zeros(env.player_num, dtype=int)
+    counter = 0
+    while counter < num:
+        _, _payoffs = env.run(is_training=False)
+        payoffs += _payoffs
+        counter += 1
+        wins[np.argmax(_payoffs)] += 1
+    for i, _ in enumerate(payoffs):
+        payoffs[i] /= counter
+    return payoffs, wins
