@@ -22,9 +22,9 @@ class ThousandSchnapsenEnv(Env):
     def get_payoffs(self):
         """ Get the payoff of a game
         Returns:
-           payoffs (list): list of payoffs
+           (list): list of payoffs
         """
-        return self.game.get_payoffs()
+        return np.array(self.game.get_payoffs())
 
     def get_perfect_information(self) -> Dict:
         """ Get the perfect information of the current state
