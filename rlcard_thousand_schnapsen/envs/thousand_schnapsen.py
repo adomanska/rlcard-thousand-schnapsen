@@ -43,8 +43,9 @@ class ThousandSchnapsenEnv(Env):
         Returns:
            (list): list of payoffs
         """
-        payoffs = np.array(self.game.get_payoffs())
+        payoffs = self.game.get_payoffs()
         if self._force_zero_sum:
+            payoffs = np.array(payoffs)
             not_used_marriages = set(
                 Card.valid_suit) - self.game.used_marriages
             rest_points = sum([

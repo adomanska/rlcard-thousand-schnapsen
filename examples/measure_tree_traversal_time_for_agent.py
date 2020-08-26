@@ -16,13 +16,10 @@ if __name__ == "__main__":
                             'seed': 0,
                             'allow_step_back': True
                         })
+        agent = DeepCFR(sess, scope=f'deep_cfr', env=env)
         for i in progressbar(range(N)):
             for player_id in range(3):
-                agent = DeepCFR(sess,
-                                scope=f'deep_cfr_{player_id}_{i}',
-                                env=env)
                 init_state, _ = env.reset()
-                print('TRAVERSAL START')
                 elapsed_time = measure_deep_cfr_traversal_time(
                     agent, init_state, player_id)
                 total_elapsed_time += elapsed_time
