@@ -1,4 +1,5 @@
-from typing import Dict, List, Sequence, Tuple, Optional, FrozenSet, Union
+from copy import deepcopy
+from typing import Dict, List, Sequence, Tuple, Optional, FrozenSet, Union, Set
 
 import numpy as np
 from rlcard.envs import Env
@@ -6,7 +7,8 @@ from rlcard.envs import Env
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
 from rlcard_thousand_schnapsen.utils import Card, init_standard_deck_starting_with_nine
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import get_marriage_points
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import get_marriage_points, Queen, King, \
+    get_context_card_value, get_color
 from .utils import OPPONENTS_INDICES
 
 
@@ -18,25 +20,47 @@ class ThousandSchnapsenEnv(Env):
         self.state_shape = [6 * CARDS_COUNT + 2 * SUITS_COUNT]
         self.history = []
         self.legal_actions = None
-        self.possible_cards = None
-        self.certain_cards = None
+        self.possible_cards: Sequence[Set[Card]]
+        self.certain_cards: Sequence[Set[Card]]
+        self.state = None
+        self.deck = init_standard_deck_starting_with_nine()
         if 'force_zero_sum' in config:
             self._force_zero_sum = config['force_zero_sum']
         else:
             self._force_zero_sum = False
         super().__init__(config)
+        self.cards_left = 8 * np.ones(self.player_num)
 
-    def reset(self):
+    def _init_game(self):
+        """ Start a new game
+
+        Returns:
+            (tuple): Tuple containing:
+
+                (numpy.array): The beginning state of the game
+                (int): The beginning player
+        """
         self.possible_cards = [
             set(init_standard_deck_starting_with_nine())
             for _ in range(self.player_num)
         ]
         self.certain_cards = [set() for _ in range(self.player_num)]
-        return super().reset()
+        self.state, player_id = self.game.init_game()
+        if self.record_action:
+            self.action_recorder = []
+        return self._extract_state(self.state), player_id
 
     def step(self, action: int, raw_action=False):
-        self._reason_about_cards(action)
-        return super().step(action, raw_action)
+        if not raw_action:
+            action = self._decode_action(action)
+        self.timestep += 1
+        self.cards_left[self.get_player_id()] -= 1
+        next_state, player_id = self.game.step(action)
+        self._reason_about_cards(
+            action,
+            next_state['active_marriage'] != self.state['active_marriage'])
+        self.state = next_state
+        return self._extract_state(next_state), player_id
 
     def get_payoffs(self):
         """ Get the payoff of a game
@@ -74,10 +98,12 @@ class ThousandSchnapsenEnv(Env):
             return False
 
         player_id = self.get_player_id()
-        state = self.history.pop()
-        self.legal_actions = state['legal_actions']
+        self.cards_left[player_id] += 1
+        self.state, extracted_state, self.certain_cards, self.possible_cards = self.history.pop(
+        )
+        self.legal_actions = extracted_state['legal_actions']
 
-        return state, player_id
+        return extracted_state, player_id
 
     def _load_model(self):
         pass
@@ -85,28 +111,41 @@ class ThousandSchnapsenEnv(Env):
     def _extract_state(self, state):
         current_player: int = state['current_player']
         stock: List[Tuple[int, Card]] = state['stock']
-        hand: List[Card] = state['hand']
-        players_used: Sequence[List[Card]] = state['players_used']
+        hand: FrozenSet[Card] = state['hand']
         active_marriage: Optional[str] = state['active_marriage']
         used_marriages: FrozenSet[str] = state['used_marriages']
 
         first_player_id = stock[0][0] if len(stock) > 0 else current_player
         opponents_indices = self._get_opponents_indices(
             current_player, first_player_id)
+        common_possible_cards = (
+            self.possible_cards[opponents_indices[0]] -
+            hand) & (self.possible_cards[opponents_indices[1]] - hand)
+        certain_cards = [
+            (self.certain_cards[opponent_id] |
+             (self.possible_cards[opponent_id] - common_possible_cards))
+            for opponent_id in opponents_indices
+        ]
+        if len(certain_cards[0]) == self.cards_left[opponents_indices[0]]:
+            certain_cards[1] |= common_possible_cards
+            common_possible_cards = set()
+        if len(certain_cards[1]) == self.cards_left[opponents_indices[1]]:
+            certain_cards[0] |= common_possible_cards
+            common_possible_cards = set()
 
         obs = np.zeros(self.state_shape[0], dtype=int)
         start_index = 0
         start_index = self._encode(obs, self._encode_cards_set(hand),
                                    start_index, CARDS_COUNT)
         start_index = self._encode(
-            obs, self._encode_cards_set(players_used[current_player]),
-            start_index, CARDS_COUNT)
-        start_index = self._encode(
-            obs, self._encode_cards_set(players_used[opponents_indices[0]]),
-            start_index, CARDS_COUNT)
-        start_index = self._encode(
-            obs, self._encode_cards_set(players_used[opponents_indices[1]]),
-            start_index, CARDS_COUNT)
+            obs, self._encode_cards_set(common_possible_cards), start_index,
+            CARDS_COUNT)
+        start_index = self._encode(obs,
+                                   self._encode_cards_set(certain_cards[0]),
+                                   start_index, CARDS_COUNT)
+        start_index = self._encode(obs,
+                                   self._encode_cards_set(certain_cards[1]),
+                                   start_index, CARDS_COUNT)
         start_index = self._encode(
             obs, self._encode_card(stock[0][1] if len(stock) > 0 else None),
             start_index, CARDS_COUNT)
@@ -120,11 +159,64 @@ class ThousandSchnapsenEnv(Env):
 
         self.legal_actions = self._get_legal_actions()
         state = {'obs': obs, 'legal_actions': self.legal_actions}
-        self.history.append(state)
+        self.history.append((self.state, state, deepcopy(self.certain_cards),
+                             deepcopy(self.possible_cards)))
         return state
 
-    def _reason_about_cards(self, action: int):
-        pass
+    def _reason_about_cards(self, action: Card, trump: bool):
+        current_player = self.get_player_id()
+        for i in range(self.player_num):
+            self.possible_cards[i] -= {action}
+            self.certain_cards[i] -= {action}
+
+        self.possible_cards[current_player] -= self._get_impossible_cards(
+            action)
+
+        if trump:
+            second_marriage_part = Card(action.suit,
+                                        King if action.rank == Queen else King)
+            self.certain_cards[current_player] |= {second_marriage_part}
+        if len(self.state['stock']) == 0 and not trump and action.rank in {
+                Queen, King
+        }:
+            second_marriage_part = Card(action.suit,
+                                        King if action.rank == Queen else King)
+            self.certain_cards[current_player] -= {second_marriage_part}
+
+    def _get_impossible_cards(self, action: Card):
+        stock = self.state['stock']
+        active_marriage = self.state['active_marriage']
+        if len(stock) == 0:
+            return set()
+
+        first_stock_card_suit = stock[0][1].suit
+        max_context_value = max([
+            get_context_card_value(card, first_stock_card_suit,
+                                   active_marriage) for _, card in stock
+        ])
+        action_context_value = get_context_card_value(action,
+                                                      first_stock_card_suit,
+                                                      active_marriage)
+
+        if action.suit == first_stock_card_suit and action_context_value > max_context_value:
+            return set()
+
+        suit_cards = get_color(first_stock_card_suit)
+
+        if action.suit != first_stock_card_suit and action_context_value > max_context_value:
+            return suit_cards
+
+        greater_cards = {
+            card
+            for card in self.deck
+            if get_context_card_value(card, first_stock_card_suit,
+                                      active_marriage) > max_context_value
+        }
+
+        if action.suit == first_stock_card_suit and action_context_value < max_context_value:
+            return greater_cards & suit_cards
+
+        return greater_cards | suit_cards
 
     def _decode_action(self, action_id):
         """ Decode Action id to the action in the game.
@@ -163,7 +255,8 @@ class ThousandSchnapsenEnv(Env):
         code[start_index:end_index][chunk] = 1
         return end_index
 
-    def _encode_cards_set(self, cards: Sequence[Card]) -> List[int]:
+    def _encode_cards_set(
+            self, cards: Union[Set[Card], FrozenSet[Card]]) -> List[int]:
         """ Get chunk encoding cards set
         
         Arg:

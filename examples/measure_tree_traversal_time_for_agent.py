@@ -1,7 +1,6 @@
 from progressbar import progressbar
 from rlcard.envs import Env
 import tensorflow as tf
-tf.get_logger().setLevel('INFO')
 
 from rlcard_thousand_schnapsen.agents import DeepCFR
 from rlcard_thousand_schnapsen.envs import make

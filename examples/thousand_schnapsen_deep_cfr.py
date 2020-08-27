@@ -49,7 +49,12 @@ with tf.Session() as sess:
     agents = []
     random_agents = []
     for i in range(env.player_num):
-        agent = DeepCFR(sess, scope='deep_cfr' + str(i), env=env)
+        agent = DeepCFR(sess,
+                        scope='deep_cfr' + str(i),
+                        env=env,
+                        memory_capacity=int(1e6),
+                        policy_network_layers=(128, 64, 32),
+                        advantage_network_layers=(128, 64, 32))
         agents.append(agent)
 
     for _ in range(env.player_num - 1):

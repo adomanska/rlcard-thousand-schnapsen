@@ -30,5 +30,5 @@ class ThousandSchnapsenPlayer(Player):
             (dict): Game state
         """
         state = dict()
-        state['hand'] = self.hand
+        state['hand'] = frozenset(self.hand)
         return state
