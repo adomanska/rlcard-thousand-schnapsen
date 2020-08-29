@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 from typing import Dict, List, Sequence, Tuple, Optional, FrozenSet, Union, Set
 
 import numpy as np
@@ -41,10 +41,10 @@ class ThousandSchnapsenEnv(Env):
                 (int): The beginning player
         """
         self.possible_cards = [
-            set(init_standard_deck_starting_with_nine())
+            frozenset(init_standard_deck_starting_with_nine())
             for _ in range(self.player_num)
         ]
-        self.certain_cards = [set() for _ in range(self.player_num)]
+        self.certain_cards = [frozenset() for _ in range(self.player_num)]
         self.state, player_id = self.game.init_game()
         if self.record_action:
             self.action_recorder = []
@@ -159,8 +159,8 @@ class ThousandSchnapsenEnv(Env):
 
         self.legal_actions = self._get_legal_actions()
         state = {'obs': obs, 'legal_actions': self.legal_actions}
-        self.history.append((self.state, state, deepcopy(self.certain_cards),
-                             deepcopy(self.possible_cards)))
+        self.history.append((self.state, state, copy(self.certain_cards),
+                             copy(self.possible_cards)))
         return state
 
     def _reason_about_cards(self, action: Card, trump: bool):

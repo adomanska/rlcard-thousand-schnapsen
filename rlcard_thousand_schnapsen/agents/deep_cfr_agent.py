@@ -1,6 +1,8 @@
 import numpy as np
 from rlcard.agents import DeepCFR as DeepCFRBase
 from rlcard.agents.deep_cfr_agent import AdvantageMemory, StrategyMemory
+import matplotlib.pyplot as plt
+import tensorflow as tf
 
 
 class DeepCFR(DeepCFRBase):
@@ -17,10 +19,14 @@ class DeepCFR(DeepCFRBase):
             for _ in range(self._num_traversals):
                 self._traverse_game_tree(init_state, p)
 
-            # Re-initialize advantage networks and train from scratch.
-            self.reinitialize_advantage_networks()
+            print('------')
+            self.advantage_losses[p] = []
+            self.reinitialize_advantage_networks_fir_player(p)
             for _ in range(self._num_step):
-                self.advantage_losses[p] = self._learn_advantage_network(p)
+                self.advantage_losses[p].append(
+                    self._learn_advantage_network(p))
+            # plt.plot(self.advantage_losses[p])
+            # plt.show()
 
             # Re-initialize advantage networks and train from scratch.
             self._iteration += 1
@@ -29,9 +35,20 @@ class DeepCFR(DeepCFRBase):
         for _ in range(self._num_step):
             policy_loss = self._learn_strategy_network()
 
-        avg_adv_loss = sum(self.advantage_losses) / len(self.advantage_losses)
+        avg_adv_loss = sum([self.advantage_losses[p][-1]
+                            for p in range(3)]) / 3
 
         return avg_adv_loss, policy_loss
+
+    @staticmethod
+    def reinitialize_advantage_networks_fir_player(p: int):
+        ''' Reinitialize the advantage networks
+        '''
+        advantage_vars = [
+            v for v in tf.global_variables()
+            if 'advantage' in v.name and str(p) in v.name
+        ]
+        tf.variables_initializer(var_list=advantage_vars)
 
     def _traverse_game_tree(self, state, player, count=0):
         """ Performs a traversal of the game tree.
@@ -68,13 +85,13 @@ class DeepCFR(DeepCFRBase):
                 expected_payoff[action] = self._traverse_game_tree(
                     child_state, player)
                 self._env.step_back()
-            sampled_regret = expected_payoff - np.sum(
-                strategy * expected_payoff)
+            exp_payoff_sum = strategy @ expected_payoff
+            sampled_regret = expected_payoff - exp_payoff_sum
             for act in actions:
                 self._advantage_memories[player].add(
                     AdvantageMemory(state['obs'], self._iteration,
-                                    sampled_regret[act], act))
-            return np.max(expected_payoff)
+                                    sampled_regret[act] / 400, act))
+            return exp_payoff_sum / np.sum(strategy)
         else:
             other_player = current_player
             if legal_actions_count == 1:
@@ -82,9 +99,7 @@ class DeepCFR(DeepCFRBase):
             else:
                 _, strategy = self._sample_action_from_advantage(
                     state, other_player)
-                # Recompute distribution dor numerical errors.
-                probs = strategy / np.sum(strategy)
-                action = np.random.choice(range(self._num_actions), p=probs)
+                action = np.random.choice(range(self._num_actions), p=strategy)
                 self._strategy_memories.add(
                     StrategyMemory(state['obs'], self._iteration, strategy))
             child_state, _ = self._env.step(action)
@@ -112,10 +127,13 @@ class DeepCFR(DeepCFRBase):
                                        })[0]
         advantages = np.clip(advantages, 0, None)
         cumulative_regret = np.sum(advantages[legal_actions])
+        # print(cumulative_regret)
         matched_regrets = np.zeros(self._num_actions)
-        if cumulative_regret > 0.:
+        if cumulative_regret > 0. and self._iteration > 1:
             matched_regrets[
                 legal_actions] = advantages[legal_actions] / cumulative_regret
         else:
-            matched_regrets[legal_actions] = 1 / self._num_actions
+            matched_regrets[legal_actions] = 1. / self._num_actions
+        # print(matched_regrets)
+        matched_regrets /= np.sum(matched_regrets)
         return advantages, matched_regrets
