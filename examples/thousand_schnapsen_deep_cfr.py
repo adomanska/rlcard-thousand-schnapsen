@@ -26,7 +26,7 @@ eval_env = make('thousand-schnapsen',
 
 # Set the iterations numbers and how frequently we evaluate the performance
 evaluate_every = 1
-evaluate_num = 100
+evaluate_num = 1000
 episode_num = 100000
 
 # The initial memory size

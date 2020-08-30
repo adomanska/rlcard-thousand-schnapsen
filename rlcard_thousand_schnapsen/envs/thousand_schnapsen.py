@@ -123,9 +123,10 @@ class ThousandSchnapsenEnv(Env):
             hand) & (self.possible_cards[opponents_indices[1]] - hand)
         certain_cards = [
             (self.certain_cards[opponent_id] |
-             (self.possible_cards[opponent_id] - common_possible_cards))
+             (self.possible_cards[opponent_id] - hand - common_possible_cards))
             for opponent_id in opponents_indices
         ]
+
         if len(certain_cards[0]) == self.cards_left[opponents_indices[0]]:
             certain_cards[1] |= common_possible_cards
             common_possible_cards = set()
