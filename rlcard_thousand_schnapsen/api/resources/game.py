@@ -28,17 +28,17 @@ class Game(Resource):
     def post(self):
         game_setup: GameSetup = GameSetup.from_dict(request.json)
 
-        if len(game_setup.player_types) < 3:
+        if len(game_setup.playerTypes) < 3:
             return {}, 409
 
         with self._graph.as_default():
-            agents = load_agents(game_setup.player_types, self._env,
+            agents = load_agents(game_setup.playerTypes, self._env,
                                  self._sess)
             self._env.set_agents(agents)
         load_model(self._graph, self._sess, self._model)
 
-        self._player_id = get_human_id(game_setup.player_types)
-        self._player_names = get_player_names(game_setup.player_types)
+        self._player_id = get_human_id(game_setup.playerTypes)
+        self._player_names = get_player_names(game_setup.playerTypes)
 
         self._env.reset()
         game_state = env_state_to_game_state(

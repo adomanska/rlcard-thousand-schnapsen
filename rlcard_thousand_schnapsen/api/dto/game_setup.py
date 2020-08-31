@@ -9,4 +9,4 @@ from rlcard_thousand_schnapsen.api.dto.player_type import PlayerType
 @dataclass_json
 @dataclass
 class GameSetup:
-    player_types: List[PlayerType]
+    playerTypes: List[PlayerType]
