@@ -1,1 +1,1 @@
-from rlcard_thousand_schnapsen.agents.deep_cfr_agent import DeepCFR
+from .deep_cfr_agent import DeepCFR

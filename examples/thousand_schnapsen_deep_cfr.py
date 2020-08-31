@@ -47,8 +47,6 @@ with tf.Session() as sess:
                         scope='deep_cfr' + str(i),
                         env=env,
                         num_step=30000,
-                        policy_network_layers=(128, 64, 32),
-                        advantage_network_layers=(128, 64, 32),
                         learning_rate=1e-5,
                         memory_capacity=int(1e6))
         agents.append(agent)
