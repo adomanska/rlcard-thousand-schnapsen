@@ -3,3 +3,5 @@ yapf>=0.30.0
 progressbar2>=3.51.4
 ddt>=1.4.1
 Flask-RESTful>=0.3.8
+dataclasses>=0.6
+dataclasses-json>=0.5.2
