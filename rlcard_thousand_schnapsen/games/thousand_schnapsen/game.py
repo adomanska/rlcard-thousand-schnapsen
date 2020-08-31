@@ -217,6 +217,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             'stock': copy(self.stock),
             'active_marriage': self.active_marriage,
             'used_marriages': frozenset(self.used_marriages),
+            'points': [player.points for player in self.players]
         }
 
     def get_legal_actions(self) -> Set[Card]:
