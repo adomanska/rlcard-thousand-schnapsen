@@ -1,14 +1,12 @@
 from typing import Sequence, Union, List
 
-from rlcard.agents import RandomAgent
 from rlcard.envs import Env
 import tensorflow as tf
 
-from rlcard_thousand_schnapsen.agents import DeepCFR
 from rlcard_thousand_schnapsen.api.dto import PlayerType
-from .human_agent import HumanAgent
+from rlcard_thousand_schnapsen.api.agents import HumanAgent, DeepCFRAgent, RandomAgent
 
-Agent = Union[HumanAgent, DeepCFR, RandomAgent]
+Agent = Union[HumanAgent, DeepCFRAgent, RandomAgent]
 
 
 def load_agent(player_type: PlayerType, index: int, env: Env,
@@ -16,7 +14,7 @@ def load_agent(player_type: PlayerType, index: int, env: Env,
     if player_type == PlayerType.Human:
         return HumanAgent(env.action_num)
     if player_type == PlayerType.DeepCfr:
-        return DeepCFR(sess, scope='deep_cfr' + str(index), env=env)
+        return DeepCFRAgent(sess, scope='deep_cfr' + str(index), env=env)
     return RandomAgent(env.action_num)
 
 
