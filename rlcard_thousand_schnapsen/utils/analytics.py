@@ -1,9 +1,10 @@
 from enum import Enum, auto
 import time
-from typing import Optional, Tuple, TypeVar, Union
+from typing import Optional, Tuple, TypeVar, Union, Dict
+import random
 
-import numpy as np
 from rlcard.envs import Env
+from rlcard.agents import DeepCFR
 
 from rlcard_thousand_schnapsen.core import LegalActionsGame
 
@@ -23,7 +24,7 @@ def perform_monte_carlo_traversal(game: Union[LegalActionsGame[T], Env],
     nodes_count = 0
     legal_actions = game.get_legal_actions()
     if game.get_player_id() != player_id:
-        legal_actions = np.random.choice(legal_actions, 1)
+        legal_actions = random.sample(legal_actions, 1)
 
     for action in legal_actions:
         game.step(action)
@@ -57,3 +58,11 @@ def measure_traversal_time(
         nodes_count = perform_complete_traversal(game)
     end = time.time()
     return end - start, nodes_count
+
+
+def measure_deep_cfr_traversal_time(agent: DeepCFR, state: Dict,
+                                    player_id: int):
+    start = time.time()
+    agent._traverse_game_tree(state, player_id)
+    end = time.time()
+    return end - start

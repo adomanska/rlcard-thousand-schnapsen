@@ -14,8 +14,8 @@ class ThousandSchnapsenPlayer(Player):
         """
         super().__init__(player_id)
         self.np_random = np_random
-        self.hand = []
-        self.used = []
+        self.hand = set()
+        self.used = set()
         self.points = 0
 
     def available_order(self):
@@ -30,5 +30,5 @@ class ThousandSchnapsenPlayer(Player):
             (dict): Game state
         """
         state = dict()
-        state['hand'] = self.hand
+        state['hand'] = frozenset(self.hand)
         return state

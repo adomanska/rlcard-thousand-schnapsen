@@ -116,6 +116,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             self.stock.clear()
 
         player_state = self.get_state(self.game_pointer)
+        player_state['new_trump'] = activated_marriage is not None
 
         return player_state, self.game_pointer
 
@@ -143,7 +144,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                         activated_marriage)
                 elif action_type == ActionType.PutCard:
                     player_id, card = data
-                    self.players[player_id].hand.append(card)
+                    self.players[player_id].hand.add(card)
                     self.players[player_id].used.remove(card)
                     self.game_pointer = player_id
                     self.stock.pop()
@@ -201,7 +202,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         public_state = self._get_public_state()
         return {
             **public_state, 'players_hand':
-            [player.hand for player in self.players]
+            [frozenset(player.hand) for player in self.players]
         }
 
     def _get_public_state(self) -> Dict:
@@ -211,13 +212,14 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
         """
         return {
             'current_player': self.game_pointer,
-            'players_used': [player.used for player in self.players],
-            'stock': self.stock,
+            'players_used':
+            [frozenset(player.used) for player in self.players],
+            'stock': copy(self.stock),
             'active_marriage': self.active_marriage,
             'used_marriages': frozenset(self.used_marriages),
         }
 
-    def get_legal_actions(self) -> Sequence[Card]:
+    def get_legal_actions(self) -> Set[Card]:
         """ Calculate and return legal actions according to Thousand Schnapsen rules
         Return:
             (Sequence[Card]): Cards that can be put on the stock

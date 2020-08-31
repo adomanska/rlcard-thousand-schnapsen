@@ -52,4 +52,4 @@ def get_marriage_points(suit: str) -> int:
 
 def get_color(suit: str) -> Set[Card]:
     ranks = ['9', 'J', 'Q', 'K', 'T', 'A']
-    return set([Card(suit, rank) for rank in ranks])
+    return {Card(suit, rank) for rank in ranks}

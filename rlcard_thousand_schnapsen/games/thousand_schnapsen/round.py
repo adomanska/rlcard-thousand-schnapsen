@@ -47,7 +47,7 @@ class ThousandSchnapsenRound(Round):
 
         stock.append((game_pointer, card))
         players[game_pointer].hand.remove(card)
-        players[game_pointer].used.append(card)
+        players[game_pointer].used.add(card)
         next_game_pointer = (game_pointer + 1) % self.num_players
         return next_game_pointer, activated_marriage
 
@@ -61,7 +61,7 @@ class ThousandSchnapsenRound(Round):
     @staticmethod
     def get_legal_actions(stock: List[Tuple[int, Card]],
                           active_marriage: Optional[str],
-                          player: ThousandSchnapsenPlayer) -> Sequence[Card]:
+                          player: ThousandSchnapsenPlayer) -> Set[Card]:
         """ Calculate and return legal actions according to Thousand Schnapsen rules
         
         Args:
@@ -75,25 +75,24 @@ class ThousandSchnapsenRound(Round):
         if len(stock) == 0:
             return player.hand
 
-        player_cards = set(player.hand)
         first_stock_card_str = stock[0][1].suit
         max_context_value = max([
             get_context_card_value(card, first_stock_card_str, active_marriage)
             for _, card in stock
         ])
-        str_cards = get_color(first_stock_card_str) & player_cards
+        str_cards = get_color(first_stock_card_str) & player.hand
         greater_cards = set([
-            card for card in player_cards
+            card for card in player.hand
             if get_context_card_value(card, first_stock_card_str,
                                       active_marriage) > max_context_value
         ])
 
         if len(str_cards & greater_cards) > 0:
-            return list(str_cards & greater_cards)
+            return str_cards & greater_cards
         if len(str_cards) > 0:
-            return list(str_cards)
+            return str_cards
         if len(greater_cards) > 0:
-            return list(greater_cards)
+            return greater_cards
         return player.hand
 
     @staticmethod

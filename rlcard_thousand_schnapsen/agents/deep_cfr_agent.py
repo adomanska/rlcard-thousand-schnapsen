@@ -1,5 +1,3 @@
-import collections
-
 import numpy as np
 from rlcard.agents import DeepCFR as DeepCFRBase
 from rlcard.agents.deep_cfr_agent import AdvantageMemory, StrategyMemory
@@ -12,32 +10,24 @@ class DeepCFR(DeepCFRBase):
         Returns:
             policy_network (tf.placeholder): the trained policy network
             average advantage loss (float): players average advantage loss
-            policy loss (float): policy loss
         """
-        init_state, init_player = self._env.reset()
-        self._root_node = init_state
+        # Collect samples
+        init_state, _ = self._env.reset()
         for p in range(self._num_players):
             for _ in range(self._num_traversals):
-                self._traverse_game_tree(self._root_node, init_player)
+                self._traverse_game_tree(init_state, p)
 
-            # Re-initialize advantage networks and train from scratch.
-            self.reinitialize_advantage_networks()
             for _ in range(self._num_step):
-                self.advantage_losses[p].append(
-                    self._learn_advantage_network(p))
-
-            # Re-initialize advantage networks and train from scratch.
-            self._iteration += 1
+                self.advantage_losses[p] = self._learn_advantage_network(p)
 
         # Train policy network.
+        policy_loss = 0
         for _ in range(self._num_step):
             policy_loss = self._learn_strategy_network()
 
-        adv_loss = [
-            self.advantage_losses[p][-1] for p in self.advantage_losses.keys()
-            if self.advantage_losses[p][-1] is not None
-        ]
-        avg_adv_loss = sum(adv_loss) / len(adv_loss)
+        avg_adv_loss = sum(self.advantage_losses) / len(self.advantage_losses)
+
+        self._iteration += 1
 
         return avg_adv_loss, policy_loss
 
@@ -54,56 +44,75 @@ class DeepCFR(DeepCFRBase):
         Returns:
             payoff (list): Recursively returns expected payoffs for each action.
         """
-        expected_payoff = collections.defaultdict(float)
-        current_player = self._env.get_player_id()
         actions = state['legal_actions']
+        legal_actions_count = len(actions)
+        current_player = self._env.get_player_id()
         if self._env.is_over():
             # Terminal state get returns.
-            payoff = self._env.get_payoffs()
-            while True:
-                self._env.step_back()
-                if self._env.get_player_id() == player:
-                    break
-            self.traverse = []
-            return payoff
+            return self._env.get_payoffs()[player]
 
         if current_player == player:
-            sampled_regret = collections.defaultdict(float)
+            if legal_actions_count == 1:
+                child_state, _ = self._env.step(actions[0])
+                payoff = self._traverse_game_tree(child_state, player)
+                self._env.step_back()
+                return payoff
+
             # Update the policy over the info set & actions via regret matching.
+            expected_payoff = np.zeros(self._env.action_num)
             _, strategy = self._sample_action_from_advantage(state, player)
             for action in actions:
                 child_state, _ = self._env.step(action)
-                self.traverse.append((action, state, child_state))
                 expected_payoff[action] = self._traverse_game_tree(
                     child_state, player)
-            while True:
                 self._env.step_back()
-                if self._env.get_player_id() == player:
-                    break
-
-            for action in actions:
-                sampled_regret[action] = expected_payoff[action][player]
-                for a_ in actions:
-                    sampled_regret[
-                        action] -= strategy[a_] * expected_payoff[a_][player]
+            exp_payoff_sum = strategy @ expected_payoff
+            sampled_regret = expected_payoff - exp_payoff_sum
             for act in actions:
                 self._advantage_memories[player].add(
-                    AdvantageMemory(state['obs'].flatten(), self._iteration,
-                                    sampled_regret[act], act))
-            players_payoff = [
-                max(expected_payoff[act_]) for act_ in expected_payoff.keys()
-            ]
-            return players_payoff
+                    AdvantageMemory(state['obs'], self._iteration,
+                                    sampled_regret[act] / 400, act))
+            return exp_payoff_sum / np.sum(strategy)
         else:
             other_player = current_player
-            _, strategy = self._sample_action_from_advantage(
-                state, other_player)
-            # Recompute distribution dor numerical errors.
-            probs = np.array(strategy)
-            probs /= probs.sum()
-            action = np.random.choice(range(self._num_actions), p=probs)
+            if legal_actions_count == 1:
+                action = actions[0]
+            else:
+                _, strategy = self._sample_action_from_advantage(
+                    state, other_player)
+                action = np.random.choice(range(self._num_actions), p=strategy)
+                self._strategy_memories.add(
+                    StrategyMemory(state['obs'], self._iteration, strategy))
             child_state, _ = self._env.step(action)
-            self._strategy_memories.add(
-                StrategyMemory(state['obs'].flatten(), self._iteration,
-                               strategy))
-            return self._traverse_game_tree(child_state, player)
+            exp_payoff = self._traverse_game_tree(child_state, player)
+            self._env.step_back()
+            return exp_payoff
+
+    def _sample_action_from_advantage(self, state, player):
+        """ Returns an info state policy by applying regret-matching.
+
+        Args:
+            state (dict): Current state.
+            player (int): Player index over which to compute regrets.
+
+        Returns:
+            1. (list) Advantage values for info state actions indexed by action.
+            2. (list) Matched regrets, prob for actions indexed by action.
+        """
+        info_state = state['obs']
+        legal_actions = state['legal_actions']
+        advantages = self._session.run(self._advantage_outputs[player],
+                                       feed_dict={
+                                           self._info_state_ph:
+                                           np.expand_dims(info_state, axis=0)
+                                       })[0]
+        advantages = np.clip(advantages, 0, None)
+        cumulative_regret = np.sum(advantages[legal_actions])
+        matched_regrets = np.zeros(self._num_actions)
+        if cumulative_regret > 0. and self._iteration > 1:
+            matched_regrets[
+                legal_actions] = advantages[legal_actions] / cumulative_regret
+        else:
+            matched_regrets[legal_actions] = 1. / len(legal_actions)
+        matched_regrets /= np.sum(matched_regrets)
+        return advantages, matched_regrets

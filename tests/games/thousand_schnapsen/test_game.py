@@ -12,7 +12,7 @@ class TestGame(unittest.TestCase):
         game = Game()
         game.init_game()
         while not game.is_over():
-            action = np.random.choice(game.get_legal_actions())
+            action = np.random.choice(list(game.get_legal_actions()))
             game.step(action)
         expected_points_sum = 120 + sum(
             get_marriage_points(marriage) for marriage in game.used_marriages)
@@ -30,7 +30,7 @@ class TestGame(unittest.TestCase):
         expected_history = []
         while not game.is_over():
             expected_history.append(self._get_game_snapshot(game))
-            action = np.random.choice(game.get_legal_actions())
+            action = np.random.choice(list(game.get_legal_actions()))
             game.step(action)
 
         while game.step_back():

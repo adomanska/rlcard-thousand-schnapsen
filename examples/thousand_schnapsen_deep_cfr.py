@@ -26,14 +26,8 @@ eval_env = make('thousand-schnapsen',
 
 # Set the iterations numbers and how frequently we evaluate the performance
 evaluate_every = 1
-evaluate_num = 100
+evaluate_num = 1000
 episode_num = 100000
-
-# The initial memory size
-memory_init_size = 1000
-
-# Train the agent every X steps
-train_every = 64
 
 # The paths for saving the logs and learning curves
 log_dir = './experiments/thousand_schnapsen_deep_cfr_result/'
@@ -49,7 +43,14 @@ with tf.Session() as sess:
     agents = []
     random_agents = []
     for i in range(env.player_num):
-        agent = DeepCFR(sess, scope='deep_cfr' + str(i), env=env)
+        agent = DeepCFR(sess,
+                        scope='deep_cfr' + str(i),
+                        env=env,
+                        num_step=30000,
+                        policy_network_layers=(128, 64, 32),
+                        advantage_network_layers=(128, 64, 32),
+                        learning_rate=1e-5,
+                        memory_capacity=int(1e6))
         agents.append(agent)
 
     for _ in range(env.player_num - 1):
