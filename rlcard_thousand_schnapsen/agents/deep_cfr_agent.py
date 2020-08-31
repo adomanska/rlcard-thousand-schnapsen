@@ -1,8 +1,6 @@
 import numpy as np
 from rlcard.agents import DeepCFR as DeepCFRBase
 from rlcard.agents.deep_cfr_agent import AdvantageMemory, StrategyMemory
-import matplotlib.pyplot as plt
-import tensorflow as tf
 
 
 class DeepCFR(DeepCFRBase):
@@ -12,43 +10,26 @@ class DeepCFR(DeepCFRBase):
         Returns:
             policy_network (tf.placeholder): the trained policy network
             average advantage loss (float): players average advantage loss
-            policy loss (float): policy loss
         """
+        # Collect samples
         init_state, _ = self._env.reset()
         for p in range(self._num_players):
             for _ in range(self._num_traversals):
                 self._traverse_game_tree(init_state, p)
 
-            print('------')
-            self.advantage_losses[p] = []
-            self.reinitialize_advantage_networks_fir_player(p)
             for _ in range(self._num_step):
-                self.advantage_losses[p].append(
-                    self._learn_advantage_network(p))
-            # plt.plot(self.advantage_losses[p])
-            # plt.show()
-
-            # Re-initialize advantage networks and train from scratch.
-            self._iteration += 1
+                self.advantage_losses[p] = self._learn_advantage_network(p)
 
         # Train policy network.
+        policy_loss = 0
         for _ in range(self._num_step):
             policy_loss = self._learn_strategy_network()
 
-        avg_adv_loss = sum([self.advantage_losses[p][-1]
-                            for p in range(3)]) / 3
+        avg_adv_loss = sum(self.advantage_losses) / len(self.advantage_losses)
+
+        self._iteration += 1
 
         return avg_adv_loss, policy_loss
-
-    @staticmethod
-    def reinitialize_advantage_networks_fir_player(p: int):
-        ''' Reinitialize the advantage networks
-        '''
-        advantage_vars = [
-            v for v in tf.global_variables()
-            if 'advantage' in v.name and str(p) in v.name
-        ]
-        tf.variables_initializer(var_list=advantage_vars)
 
     def _traverse_game_tree(self, state, player, count=0):
         """ Performs a traversal of the game tree.
@@ -108,7 +89,7 @@ class DeepCFR(DeepCFRBase):
             return exp_payoff
 
     def _sample_action_from_advantage(self, state, player):
-        ''' Returns an info state policy by applying regret-matching.
+        """ Returns an info state policy by applying regret-matching.
 
         Args:
             state (dict): Current state.
@@ -117,7 +98,7 @@ class DeepCFR(DeepCFRBase):
         Returns:
             1. (list) Advantage values for info state actions indexed by action.
             2. (list) Matched regrets, prob for actions indexed by action.
-        '''
+        """
         info_state = state['obs']
         legal_actions = state['legal_actions']
         advantages = self._session.run(self._advantage_outputs[player],
@@ -127,13 +108,11 @@ class DeepCFR(DeepCFRBase):
                                        })[0]
         advantages = np.clip(advantages, 0, None)
         cumulative_regret = np.sum(advantages[legal_actions])
-        # print(cumulative_regret)
         matched_regrets = np.zeros(self._num_actions)
         if cumulative_regret > 0. and self._iteration > 1:
             matched_regrets[
                 legal_actions] = advantages[legal_actions] / cumulative_regret
         else:
-            matched_regrets[legal_actions] = 1. / self._num_actions
-        # print(matched_regrets)
+            matched_regrets[legal_actions] = 1. / len(legal_actions)
         matched_regrets /= np.sum(matched_regrets)
         return advantages, matched_regrets

@@ -20,8 +20,8 @@ class ThousandSchnapsenEnv(Env):
         self.state_shape = [6 * CARDS_COUNT + 2 * SUITS_COUNT]
         self.history = []
         self.legal_actions = None
-        self.possible_cards: Sequence[Set[Card]]
-        self.certain_cards: Sequence[Set[Card]]
+        self.possible_cards: Sequence[Set[Card]] = []
+        self.certain_cards: Sequence[Set[Card]] = []
         self.state = None
         self.deck = init_standard_deck_starting_with_nine()
         if 'force_zero_sum' in config:
@@ -41,8 +41,7 @@ class ThousandSchnapsenEnv(Env):
                 (int): The beginning player
         """
         self.possible_cards = [
-            frozenset(init_standard_deck_starting_with_nine())
-            for _ in range(self.player_num)
+            frozenset(self.deck) for _ in range(self.player_num)
         ]
         self.certain_cards = [frozenset() for _ in range(self.player_num)]
         self.state, player_id = self.game.init_game()
@@ -182,7 +181,7 @@ class ThousandSchnapsenEnv(Env):
         }:
             second_marriage_part = Card(action.suit,
                                         King if action.rank == Queen else King)
-            self.certain_cards[current_player] -= {second_marriage_part}
+            self.possible_cards[current_player] -= {second_marriage_part}
 
     def _get_impossible_cards(self, action: Card):
         stock = self.state['stock']
