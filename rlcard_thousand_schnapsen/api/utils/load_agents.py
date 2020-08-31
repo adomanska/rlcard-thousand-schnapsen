@@ -5,7 +5,7 @@ from rlcard.envs import Env
 import tensorflow as tf
 
 from rlcard_thousand_schnapsen.agents import DeepCFR
-from rlcard_thousand_schnapsen.api.models import PlayerType
+from rlcard_thousand_schnapsen.api.dto import PlayerType
 from .human_agent import HumanAgent
 
 

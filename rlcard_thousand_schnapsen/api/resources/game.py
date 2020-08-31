@@ -2,7 +2,7 @@ from flask import request
 from flask_restful import Resource
 import tensorflow as tf
 
-from rlcard_thousand_schnapsen.api.models import GameSetup
+from rlcard_thousand_schnapsen.api.dto import GameSetup
 from rlcard_thousand_schnapsen.api.utils import load_model, load_agents
 from rlcard_thousand_schnapsen.envs import make
 
