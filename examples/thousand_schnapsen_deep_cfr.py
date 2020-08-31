@@ -29,12 +29,6 @@ evaluate_every = 1
 evaluate_num = 1000
 episode_num = 100000
 
-# The initial memory size
-memory_init_size = 1000
-
-# Train the agent every X steps
-train_every = 64
-
 # The paths for saving the logs and learning curves
 log_dir = './experiments/thousand_schnapsen_deep_cfr_result/'
 
