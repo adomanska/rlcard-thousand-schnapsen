@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Api
 import click
 
@@ -6,6 +7,7 @@ from rlcard_thousand_schnapsen.api.resources import Game
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 
 @click.command()
