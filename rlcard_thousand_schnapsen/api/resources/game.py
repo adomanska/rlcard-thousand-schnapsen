@@ -1,5 +1,5 @@
 from queue import Queue
-from typing import List
+from typing import List, Callable, Dict
 
 from flask import request
 from flask_restful import Resource
@@ -19,7 +19,7 @@ class Game(Resource):
     _player_id: int
     _player_names = List[str]
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, emit: Callable[[str, Dict], None]):
         self._env: ThousandSchnapsenEnv = make('thousand-schnapsen',
                                                config={
                                                    'seed': 0,
@@ -28,6 +28,7 @@ class Game(Resource):
         self._model = model
         self._graph = tf.Graph()
         self._sess = tf.Session(graph=self._graph)
+        self._emit = emit
 
     def post(self):
         game_setup: GameSetup = GameSetup.from_dict(request.json)
@@ -51,7 +52,8 @@ class Game(Resource):
         player_id = get_human_id(game_setup.playerTypes)
         player_names = get_player_names(game_setup.playerTypes)
 
-        game_thread = GameThread(self._env, player_id, player_names)
+        game_thread = GameThread(self._env, player_id, player_names,
+                                 self._emit)
         game_thread.start()
 
         return {}, 200

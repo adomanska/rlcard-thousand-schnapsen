@@ -9,7 +9,7 @@ from rlcard_thousand_schnapsen.api.resources import Game
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
-socket_io = SocketIO(app)
+socket_io = SocketIO(app, async_mode='threading')
 
 
 @click.command()
@@ -19,7 +19,9 @@ socket_io = SocketIO(app)
               required=True,
               help='Path to pre-trained Deep CFR model')
 def run_api(port: int, model: str):
-    api.add_resource(Game, '/game', resource_class_args=[model])
+    api.add_resource(Game,
+                     '/game',
+                     resource_class_args=[model, socket_io.emit])
     socket_io.run(app, port=port)
 
 
