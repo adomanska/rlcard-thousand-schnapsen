@@ -1,16 +1,18 @@
+from queue import Queue
 from typing import List
 
 from flask import request
 from flask_restful import Resource
 import tensorflow as tf
 
-from rlcard_thousand_schnapsen.api.dto import GameSetup
-from rlcard_thousand_schnapsen.api.mappers import env_state_to_game_state
+from rlcard_thousand_schnapsen.api.dto import GameSetup, Action
+from rlcard_thousand_schnapsen.api.mappers import action_dto_to_env_action
 from rlcard_thousand_schnapsen.api.utils import load_model, load_agents, get_human_id, get_player_names, GameThread
 from rlcard_thousand_schnapsen.envs import make
 from rlcard_thousand_schnapsen.envs.thousand_schnapsen import ThousandSchnapsenEnv
 
 game_thread = None
+action_queue = Queue(maxsize=1)
 
 
 class Game(Resource):
@@ -34,27 +36,30 @@ class Game(Resource):
             return {}, 409
 
         global game_thread
+        global action_queue
+
         if game_thread is not None:
             game_thread.stop()
             game_thread.join()
 
         with self._graph.as_default():
-            agents = load_agents(game_setup.playerTypes, self._env, self._sess)
+            agents = load_agents(game_setup.playerTypes, self._env, self._sess,
+                                 action_queue)
             self._env.set_agents(agents)
         load_model(self._graph, self._sess, self._model)
 
-        self._player_id = get_human_id(game_setup.playerTypes)
-        self._player_names = get_player_names(game_setup.playerTypes)
+        player_id = get_human_id(game_setup.playerTypes)
+        player_names = get_player_names(game_setup.playerTypes)
 
-        self._env.reset()
-        game_state = env_state_to_game_state(
-            state=self._env.state,
-            player_id=self._player_id,
-            player_names=self._player_names,
-            game_over=self._env.is_over(),
-            legal_actions=self._env.get_legal_actions())
-
-        game_thread = GameThread(self._env)
+        game_thread = GameThread(self._env, player_id, player_names)
         game_thread.start()
 
-        return game_state.to_dict(), 200
+        return {}, 200
+
+    def put(self):
+        action: Action = Action.from_dict(request.json)
+
+        global action_queue
+        action_queue.put(action_dto_to_env_action(action))
+
+        return {}, 200
