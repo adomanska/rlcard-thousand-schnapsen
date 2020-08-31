@@ -27,9 +27,11 @@ class GameThread(Thread):
         while not self._env.is_over():
             if self.manually_stopped():
                 return
-            action, _ = self._env.agents[player_id].eval_step(state)
-            state, player_id = self._env.step(action)
-            self._send_state_update()
+            result = self._env.agents[player_id].eval_step(state)
+            if result is not None:
+                action, _ = result
+                state, player_id = self._env.step(action)
+                self._send_state_update()
 
     def _send_state_update(self):
         game_state = env_state_to_game_state(

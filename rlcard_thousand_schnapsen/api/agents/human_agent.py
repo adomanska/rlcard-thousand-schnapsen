@@ -1,5 +1,5 @@
-from queue import Queue
-from typing import Tuple
+from queue import Queue, Empty
+from typing import Tuple, Optional
 
 
 class HumanAgent:
@@ -7,6 +7,9 @@ class HumanAgent:
         self._action_queue = action_queue
         self.use_raw = False
 
-    def eval_step(self, state) -> Tuple[int, int]:
-        action: int = self._action_queue.get()
+    def eval_step(self, state) -> Optional[Tuple[int, int]]:
+        try:
+            action: int = self._action_queue.get(timeout=0.5)
+        except Empty:
+            return None
         return action, 0
