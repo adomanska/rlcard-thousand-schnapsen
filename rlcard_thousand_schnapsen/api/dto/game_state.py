@@ -11,11 +11,11 @@ from .card import Card
 class GameState:
     stack: List[Card]
     hand: List[Card]
-    available_actions: Optional[List[Card]]
-    next_player_id: int
-    player_id: int
-    player_names: List[str]
+    availableActions: Optional[List[Card]]
+    nextPlayerId: int
+    playerId: int
+    playerNames: List[str]
     points: List[int]
-    used_marriages: List[str]
-    active_marriage: Optional[str]
-    game_over: bool
+    usedMarriages: List[str]
+    activeMarriage: Optional[str]
+    gameOver: bool

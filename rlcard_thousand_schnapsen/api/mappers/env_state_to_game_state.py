@@ -27,11 +27,11 @@ def env_state_to_game_state(state: Dict, player_id: int,
 
     return GameState(stack=stack,
                      hand=hand,
-                     available_actions=available_actions,
-                     next_player_id=next_player_id,
-                     player_id=player_id,
+                     availableActions=available_actions,
+                     nextPlayerId=next_player_id,
+                     playerId=player_id,
                      points=points,
-                     used_marriages=used_marriages,
-                     active_marriage=active_marriage,
-                     player_names=player_names,
-                     game_over=game_over)
+                     usedMarriages=used_marriages,
+                     activeMarriage=active_marriage,
+                     playerNames=player_names,
+                     gameOver=game_over)
