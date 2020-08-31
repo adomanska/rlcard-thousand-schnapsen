@@ -33,7 +33,7 @@ setuptools.setup(
     install_requires=[
         'rlcard>=0.2.5', 'rlcard[tensorflow]>=0.2.5', 'Flask-RESTful>=0.3.8',
         'click>=7.1.2', 'dataclasses>=0.6'
-        'dataclasses-json>=0.5.2', 'Flask-Cors>=3.0.9'
+        'dataclasses-json>=0.5.2', 'Flask-Cors>=3.0.9', 'Flask-SocketIO>=4.3.1'
     ],
     requires_python='>=3.5',
     classifiers=[

@@ -6,3 +6,4 @@ Flask-RESTful>=0.3.8
 dataclasses>=0.6
 dataclasses-json>=0.5.2
 Flask-Cors>=3.0.9
+Flask-SocketIO>=4.3.1
