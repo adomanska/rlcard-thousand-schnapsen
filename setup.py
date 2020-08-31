@@ -34,6 +34,7 @@ setuptools.setup(
         'rlcard>=0.2.5',
         'rlcard[tensorflow]>=0.2.5',
         'Flask-RESTful>=0.3.8',
+        'click>=7.1.2',
     ],
     requires_python='>=3.5',
     classifiers=[
