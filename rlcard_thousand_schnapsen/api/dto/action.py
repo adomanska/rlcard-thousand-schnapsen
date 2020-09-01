@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-
 from dataclasses_json import dataclass_json
+
 from rlcard_thousand_schnapsen.api.dto import Card
 
 
