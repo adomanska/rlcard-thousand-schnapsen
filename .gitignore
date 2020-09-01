@@ -130,10 +130,10 @@ dmypy.json
 
 # IDE configuration
 .idea
+.vscode
 
 # Experiments results
 experiments
 examples/experiments
 models
 examples/models
-

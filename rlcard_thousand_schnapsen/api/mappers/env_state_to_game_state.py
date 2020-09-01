@@ -14,7 +14,7 @@ def env_state_to_game_state(state: Dict, player_id: int,
     stack = map_cards([card for _, card in state['stock']])
     hand = map_cards(state['hand'])
     next_player_id = state['current_player']
-    points = state['points']
+    points = [int(player_points) for player_points in state['points']]
     used_marriages = list(state['used_marriages'])
     active_marriage = state['active_marriage']
 

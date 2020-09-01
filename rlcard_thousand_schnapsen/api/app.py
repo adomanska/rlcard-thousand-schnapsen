@@ -9,7 +9,7 @@ from rlcard_thousand_schnapsen.api.resources import Game
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
-socket_io = SocketIO(app, async_mode='threading')
+socket_io = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
 
 
 @click.command()
