@@ -41,6 +41,8 @@ class GameThread(Thread):
             player_names=self._player_names,
             game_over=self._env.is_over(),
             legal_actions=self._env.get_legal_actions())
+        self._emit('game_state_update', game_state.to_dict())
         if len(game_state.stack) == 3:
             sleep(2)
-        self._emit('game_state_update', game_state.to_dict())
+            game_state.stack = []
+            self._emit('game_state_update', game_state.to_dict())

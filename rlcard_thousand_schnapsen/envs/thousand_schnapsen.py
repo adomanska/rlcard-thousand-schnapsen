@@ -186,7 +186,7 @@ class ThousandSchnapsenEnv(Env):
             self.possible_cards[current_player] -= {second_marriage_part}
 
     def _get_impossible_cards(self, action: Card):
-        stock = self.state['stock']
+        stock = self.state['stock'] if len(self.state['stock']) < 3 else []
         active_marriage = self.state['active_marriage']
         if len(stock) == 0:
             return set()

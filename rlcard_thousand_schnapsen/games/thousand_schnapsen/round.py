@@ -75,7 +75,7 @@ class ThousandSchnapsenRound(Round):
         Return:
             (Sequence[Card]): Cards that can be put on the stock
         """
-        if len(stock) == 0:
+        if len(stock) == 0 or len(stock) == PLAYER_COUNT:
             return player.hand
 
         first_stock_card_str = stock[0][1].suit
