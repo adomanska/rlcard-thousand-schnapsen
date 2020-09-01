@@ -5,7 +5,8 @@ import numpy as np
 from rlcard.envs import Env
 
 from rlcard_thousand_schnapsen.games.thousand_schnapsen import Game
-from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT
+from rlcard_thousand_schnapsen.games.thousand_schnapsen.constants import CARDS_PER_SUIT_COUNT, CARDS_COUNT, SUITS_COUNT, \
+    PLAYER_COUNT
 from rlcard_thousand_schnapsen.utils import Card, init_standard_deck_starting_with_nine
 from rlcard_thousand_schnapsen.games.thousand_schnapsen.utils import get_marriage_points, Queen, King, \
     get_context_card_value, get_color
@@ -109,7 +110,8 @@ class ThousandSchnapsenEnv(Env):
 
     def _extract_state(self, state):
         current_player: int = state['current_player']
-        stock: List[Tuple[int, Card]] = state['stock']
+        stock: List[Tuple[int, Card]] = state['stock'] if len(
+            state['stock']) < PLAYER_COUNT else []
         hand: FrozenSet[Card] = state['hand']
         active_marriage: Optional[str] = state['active_marriage']
         used_marriages: FrozenSet[str] = state['used_marriages']
@@ -184,7 +186,7 @@ class ThousandSchnapsenEnv(Env):
             self.possible_cards[current_player] -= {second_marriage_part}
 
     def _get_impossible_cards(self, action: Card):
-        stock = self.state['stock']
+        stock = self.state['stock'] if len(self.state['stock']) < PLAYER_COUNT else []
         active_marriage = self.state['active_marriage']
         if len(stock) == 0:
             return set()

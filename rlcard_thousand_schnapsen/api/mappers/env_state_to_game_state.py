@@ -12,7 +12,7 @@ def env_state_to_game_state(state: Dict, player_id: int,
                             player_names: List[str], game_over: bool,
                             legal_actions: Sequence[int]) -> GameState:
     stack = map_cards([card for _, card in state['stock']])
-    hand = map_cards(state['hand'])
+    hand = map_cards(state['players_hand'][player_id])
     next_player_id = state['current_player']
     points = [int(player_points) for player_points in state['points']]
     used_marriages = list(state['used_marriages'])

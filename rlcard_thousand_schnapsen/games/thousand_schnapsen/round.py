@@ -6,6 +6,7 @@ from rlcard.core import Round
 
 from rlcard_thousand_schnapsen.core import Queen, King
 from rlcard_thousand_schnapsen.utils import Card
+from .constants import PLAYER_COUNT
 from .player import ThousandSchnapsenPlayer
 from .utils import get_marriage_points, get_context_card_value, get_color
 
@@ -37,6 +38,8 @@ class ThousandSchnapsenRound(Round):
                 (int): Next player id
                 (Optional[str]): New active marriage (if activated)
         """
+        if len(stock) == PLAYER_COUNT:
+            stock.clear()
         activated_marriage = None
         if len(stock) == 0 and self._check_marriage(players[game_pointer],
                                                     card):
@@ -72,7 +75,7 @@ class ThousandSchnapsenRound(Round):
         Return:
             (Sequence[Card]): Cards that can be put on the stock
         """
-        if len(stock) == 0:
+        if len(stock) == 0 or len(stock) == PLAYER_COUNT:
             return player.hand
 
         first_stock_card_str = stock[0][1].suit

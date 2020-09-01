@@ -92,10 +92,11 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                 (int): Next player's id
         """
         # Update state and history
+        self._update_history(
+            PutCardAction((self.game_pointer, card, copy(self.stock))))
         new_game_pointer, activated_marriage = self.round.proceed_round(
             self.game_pointer, self.players, self.stock, self.used_marriages,
             card)
-        self._update_history(PutCardAction((self.game_pointer, card)))
         if activated_marriage is not None:
             self._update_history(
                 ActivateMarriageAction(
@@ -111,9 +112,7 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
             self.players[winner_id].points += points
             self.game_pointer = winner_id
             self.round_counter += 1
-            self._update_history(
-                EvaluateRoundAction((winner_id, points, copy(self.stock))))
-            self.stock.clear()
+            self._update_history(EvaluateRoundAction((winner_id, points)))
 
         player_state = self.get_state(self.game_pointer)
         player_state['new_trump'] = activated_marriage is not None
@@ -133,9 +132,8 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                 action_type = history_action.type
                 data = history_action.data
                 if action_type == ActionType.EvaluateRound:
-                    winner_id, points, stock = data
+                    winner_id, points = data
                     self.players[winner_id].points -= points
-                    self.stock = stock
                     self.round_counter -= 1
                 elif action_type == ActionType.ActivateMarriage:
                     self.active_marriage, activated_marriage, player_id = data
@@ -143,11 +141,11 @@ class ThousandSchnapsenGame(LegalActionsGame[Card]):
                     self.players[player_id].points -= get_marriage_points(
                         activated_marriage)
                 elif action_type == ActionType.PutCard:
-                    player_id, card = data
+                    player_id, card, stock = data
                     self.players[player_id].hand.add(card)
                     self.players[player_id].used.remove(card)
                     self.game_pointer = player_id
-                    self.stock.pop()
+                    self.stock = stock
                     break
             return True
         return False
