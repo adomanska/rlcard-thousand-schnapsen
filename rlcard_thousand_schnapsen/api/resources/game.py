@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 import tensorflow as tf
 
-from rlcard_thousand_schnapsen.api.dto import GameSetup, Action
+from rlcard_thousand_schnapsen.api.dto import GameSetup, Action, PlayerType
 from rlcard_thousand_schnapsen.api.mappers import action_dto_to_env_action
 from rlcard_thousand_schnapsen.api.utils import load_model, load_agents, get_human_id, get_player_names, GameThread
 from rlcard_thousand_schnapsen.envs import make
@@ -22,7 +22,6 @@ class Game(Resource):
     def __init__(self, model: str, emit: Callable[[str, Dict], None]):
         self._env: ThousandSchnapsenEnv = make('thousand-schnapsen',
                                                config={
-                                                   'seed': 0,
                                                    'force_zero_sum': False
                                                })
         self._model = model
@@ -47,7 +46,8 @@ class Game(Resource):
             agents = load_agents(game_setup.playerTypes, self._env, self._sess,
                                  action_queue)
             self._env.set_agents(agents)
-        load_model(self._graph, self._sess, self._model)
+        if PlayerType.DeepCfr in game_setup.playerTypes:
+            load_model(self._graph, self._sess, self._model)
 
         player_id = get_human_id(game_setup.playerTypes)
         player_names = get_player_names(game_setup.playerTypes)

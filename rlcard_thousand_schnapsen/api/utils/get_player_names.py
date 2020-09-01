@@ -12,7 +12,7 @@ def get_player_name(player_type: PlayerType, players_count: Dict[PlayerType,
     if player_type == PlayerType.Random:
         return f'Random #{player_no}'
     if player_type == PlayerType.DeepCfr:
-        return f'DeepCfr #{player_no}'
+        return f'Deep CFR #{player_no}'
 
 
 def get_player_names(player_types: Sequence[PlayerType]) -> List[str]:
