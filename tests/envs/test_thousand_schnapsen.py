@@ -95,20 +95,46 @@ class TestThousandSchnapsenEnv(unittest.TestCase):
         self.assertTrue(np.allclose(expected, code))
         self.assertEqual(6, end_index)
 
-    def test_extract_state(self):
+    def test_extract_state_when_round_in_progress(self):
         state = {
             'stock': [(1, Card(Diamonds, Jack))],
             'active_marriage': Hearts,
             'used_marriages': {Hearts, Diamonds},
-            'hand': [Card(Diamonds, Queen),
-                     Card(Spades, Nine)],
+            'hand': frozenset([Card(Diamonds, Queen),
+                               Card(Spades, Nine)]),
             'players_used': [[], [Card(Diamonds, Jack)], []],
             'current_player': 2
         }
         expected = np.zeros(152, dtype=int)
         expected[[0, 14]] = 1  # hand
-        expected[61] = 1  # used by 1
+        expected[24:48] = 1  # common possible
+        expected[[24 + 0, 24 + 14]] = 0  # remove hand from possible
         expected[109] = 1  # stock
+        expected[147] = 1  # active marriage
+        expected[[150, 151]] = 1  # used marriages
+
+        result = self.env._extract_state(state)['obs']
+
+        self.assertTrue(np.allclose(expected, result))
+
+    def test_extract_state_when_new_round(self):
+        state = {
+            'stock': [(1, Card(Diamonds, Jack)), (1, Card(Diamonds, King)),
+                      (1, Card(Diamonds, Ace))],
+            'active_marriage':
+            Hearts,
+            'used_marriages': {Hearts, Diamonds},
+            'hand':
+            frozenset([Card(Diamonds, Queen),
+                       Card(Spades, Nine)]),
+            'players_used': [[], [Card(Diamonds, Jack)], []],
+            'current_player':
+            2
+        }
+        expected = np.zeros(152, dtype=int)
+        expected[[0, 14]] = 1  # hand
+        expected[24:48] = 1  # common possible
+        expected[[24 + 0, 24 + 14]] = 0  # remove hand from possible
         expected[147] = 1  # active marriage
         expected[[150, 151]] = 1  # used marriages
 

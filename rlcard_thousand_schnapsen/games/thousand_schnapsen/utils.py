@@ -18,7 +18,7 @@ class Action:
 
 
 class PutCardAction(NamedTuple, Action):
-    data: Tuple[int, Card]
+    data: Tuple[int, Card, List[Tuple[int, Card]]]
     type = ActionType.PutCard
 
 
@@ -28,7 +28,7 @@ class ActivateMarriageAction(NamedTuple, Action):
 
 
 class EvaluateRoundAction(NamedTuple, Action):
-    data: Tuple[int, int, List[Tuple[int, Card]]]
+    data: Tuple[int, int]
     type = ActionType.EvaluateRound
 
 

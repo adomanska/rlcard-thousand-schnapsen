@@ -1,4 +1,5 @@
 from threading import Thread, Event
+from time import sleep
 from typing import List, Callable, Dict
 
 from rlcard_thousand_schnapsen.envs.thousand_schnapsen import ThousandSchnapsenEnv
@@ -35,9 +36,11 @@ class GameThread(Thread):
 
     def _send_state_update(self):
         game_state = env_state_to_game_state(
-            state=self._env.state,
+            state=self._env.get_perfect_information(),
             player_id=self._human_player_id,
             player_names=self._player_names,
             game_over=self._env.is_over(),
             legal_actions=self._env.get_legal_actions())
+        if len(game_state.stack) == 3:
+            sleep(2)
         self._emit('game_state_update', game_state.to_dict())
