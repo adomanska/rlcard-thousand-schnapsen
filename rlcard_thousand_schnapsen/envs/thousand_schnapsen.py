@@ -135,7 +135,7 @@ class ThousandSchnapsenEnv(Env):
             certain_cards[0] |= common_possible_cards
             common_possible_cards = set()
 
-        obs = np.zeros(self.state_shape[0], dtype=int)
+        obs = np.zeros(self.state_shape[0], dtype=bool)
         start_index = 0
         start_index = self._encode(obs, self._encode_cards_set(hand),
                                    start_index, CARDS_COUNT)
@@ -186,7 +186,8 @@ class ThousandSchnapsenEnv(Env):
             self.possible_cards[current_player] -= {second_marriage_part}
 
     def _get_impossible_cards(self, action: Card):
-        stock = self.state['stock'] if len(self.state['stock']) < PLAYER_COUNT else []
+        stock = self.state['stock'] if len(
+            self.state['stock']) < PLAYER_COUNT else []
         active_marriage = self.state['active_marriage']
         if len(stock) == 0:
             return set()
