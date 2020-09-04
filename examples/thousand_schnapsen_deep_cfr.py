@@ -27,7 +27,7 @@ eval_env = make('thousand-schnapsen',
 # Set the iterations numbers and how frequently we evaluate the performance
 evaluate_every = 1
 evaluate_num = 1000
-episode_num = 100000
+episode_num = 1000
 
 # The paths for saving the logs and learning curves
 log_dir = './experiments/thousand_schnapsen_deep_cfr_result/'
@@ -47,6 +47,10 @@ with tf.Session() as sess:
                         scope='deep_cfr' + str(i),
                         env=env,
                         num_step=30000,
+                        policy_network_layers=(8 * 24, 4 * 24, 2 * 24, 24),
+                        advantage_network_layers=(8 * 24, 4 * 24, 2 * 24, 24),
+                        batch_size_advantage=100,
+                        batch_size_strategy=100,
                         learning_rate=1e-5,
                         memory_capacity=int(1e6))
         agents.append(agent)
