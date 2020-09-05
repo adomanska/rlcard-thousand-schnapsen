@@ -26,6 +26,7 @@ eval_env = make('thousand-schnapsen',
 
 # Set the iterations numbers and how frequently we evaluate the performance
 evaluate_every = 1
+save_every = 1
 evaluate_num = 1000
 episode_num = 1000
 
@@ -51,8 +52,8 @@ with tf.Session() as sess:
                         advantage_network_layers=(8 * 24, 4 * 24, 2 * 24, 24),
                         batch_size_advantage=100,
                         batch_size_strategy=100,
-                        learning_rate=1e-5,
-                        memory_capacity=int(1e6))
+                        memory_capacity=int(1e6),
+                        learning_rate=1e-5)
         agents.append(agent)
 
     for _ in range(env.player_num - 1):
@@ -68,6 +69,13 @@ with tf.Session() as sess:
     # Init a Logger to plot the learning curve
     logger = Logger(log_dir)
 
+    # Create dir for results
+    save_dir = 'models/thousand_schnapsen_deep_cfr'
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    saver = tf.train.Saver()
+    best_win_rate = 0
+
     for episode in range(episode_num):
         agents[0].train()
 
@@ -75,17 +83,17 @@ with tf.Session() as sess:
         if episode % evaluate_every == 0:
             payoffs, wins = tournament(eval_env, evaluate_num)
             logger.log_performance(env.timestep, payoffs[0])
-            print(f'Win rate: {(wins[0] * 100) / evaluate_num}')
+            logger.csv_file.flush()
+            win_rate = (wins[0] * 100) / evaluate_num
+            print(f'Win rate: {win_rate}')
+
+        # Save model
+        if episode % save_every == 0 and win_rate > best_win_rate:
+            best_win_rate = win_rate
+            saver.save(sess, os.path.join(save_dir, 'model'))
 
     # Close files in the logger
     logger.close_files()
 
     # Plot the learning curve
     logger.plot('DeepCFR')
-
-    # Save model
-    save_dir = 'models/thousand_schnapsen_deep_cfr'
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    saver = tf.train.Saver()
-    saver.save(sess, os.path.join(save_dir, 'model'))

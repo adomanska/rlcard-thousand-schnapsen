@@ -161,8 +161,9 @@ class ThousandSchnapsenEnv(Env):
 
         self.legal_actions = self._get_legal_actions()
         state = {'obs': obs, 'legal_actions': self.legal_actions}
-        self.history.append((self.state, state, copy(self.certain_cards),
-                             copy(self.possible_cards)))
+        if self.allow_step_back:
+            self.history.append((self.state, state, copy(self.certain_cards),
+                                 copy(self.possible_cards)))
         return state
 
     def _reason_about_cards(self, action: Card, trump: bool):
