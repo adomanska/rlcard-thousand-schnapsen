@@ -1,9 +1,31 @@
 import numpy as np
 from rlcard.agents import DeepCFR as DeepCFRBase
-from rlcard.agents.deep_cfr_agent import AdvantageMemory, StrategyMemory
+from rlcard.agents.deep_cfr_agent import AdvantageMemory, StrategyMemory, FixedSizeRingBuffer
+import tensorflow as tf
 
 
 class DeepCFR(DeepCFRBase):
+    def __init__(self,
+                 session,
+                 scope,
+                 env,
+                 policy_network_layers=(32, 32),
+                 advantage_network_layers=(32, 32),
+                 num_traversals=10,
+                 num_step=40,
+                 learning_rate=1e-4,
+                 batch_size_advantage=16,
+                 batch_size_strategy=16,
+                 memory_capacity=int(1e7),
+                 strategy_memory_capacity: int = None):
+        super().__init__(session, scope, env, policy_network_layers,
+                         advantage_network_layers, num_traversals, num_step,
+                         learning_rate, batch_size_advantage,
+                         batch_size_strategy, memory_capacity)
+        if strategy_memory_capacity is not None:
+            self._strategy_memories = FixedSizeRingBuffer(
+                strategy_memory_capacity)
+
     def train(self):
         """ Perform tree traversal and train the network
 
@@ -17,10 +39,12 @@ class DeepCFR(DeepCFRBase):
             for _ in range(self._num_traversals):
                 self._traverse_game_tree(init_state, p)
 
+            self.reinitialize_advantage_network(p)
             for _ in range(self._num_step):
                 self.advantage_losses[p] = self._learn_advantage_network(p)
 
         # Train policy network.
+        self.reinitialize_policy_network()
         policy_loss = 0
         for _ in range(self._num_step):
             policy_loss = self._learn_strategy_network()
@@ -30,6 +54,25 @@ class DeepCFR(DeepCFRBase):
         self._iteration += 1
 
         return avg_adv_loss, policy_loss
+
+    @staticmethod
+    def reinitialize_advantage_network(player_id: int):
+        """ Reinitialize the advantage network
+        """
+        advantage_vars = [
+            v for v in tf.global_variables()
+            if f'{player_id}_advantage' in v.name
+        ]
+        tf.variables_initializer(var_list=advantage_vars)
+
+    @staticmethod
+    def reinitialize_policy_network():
+        """ Reinitialize the policy network
+        """
+        policy_vars = [
+            v for v in tf.global_variables() if 'advantage' not in v.name
+        ]
+        tf.variables_initializer(var_list=policy_vars)
 
     def _traverse_game_tree(self, state, player, count=0):
         """ Performs a traversal of the game tree.

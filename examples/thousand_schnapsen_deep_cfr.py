@@ -31,7 +31,7 @@ evaluate_num = 1000
 episode_num = 1000
 
 # The paths for saving the logs and learning curves
-log_dir = './experiments/thousand_schnapsen_deep_cfr_result/'
+log_dir = './experiments/thousand_schnapsen_deep_cfr_result3/'
 
 # Set a global seed
 set_global_seed(0)
@@ -53,7 +53,8 @@ with tf.Session() as sess:
                         batch_size_advantage=100,
                         batch_size_strategy=100,
                         memory_capacity=int(1e6),
-                        learning_rate=1e-5)
+                        learning_rate=1e-5,
+                        strategy_memory_capacity=2 * int(1e6))
         agents.append(agent)
 
     for _ in range(env.player_num - 1):
@@ -70,7 +71,7 @@ with tf.Session() as sess:
     logger = Logger(log_dir)
 
     # Create dir for results
-    save_dir = 'models/thousand_schnapsen_deep_cfr'
+    save_dir = 'models/thousand_schnapsen_deep_cfr3'
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     saver = tf.train.Saver()
