@@ -36,8 +36,10 @@ class DeepCFR(DeepCFRBase):
         # Collect samples
         init_state, _ = self._env.reset()
         for p in range(self._num_players):
-            for _ in range(self._num_traversals):
-                self._traverse_game_tree(init_state, p)
+            cache = {}
+            for _ in range(self._num_traversals): 
+                self._traverse_game_tree(init_state, p, cache)
+            print(len(cache))
 
             self.reinitialize_advantage_network(p)
             for _ in range(self._num_step):
@@ -74,7 +76,7 @@ class DeepCFR(DeepCFRBase):
         ]
         tf.variables_initializer(var_list=policy_vars)
 
-    def _traverse_game_tree(self, state, player, count=0):
+    def _traverse_game_tree(self, state, player, cache = {}, points = 0):
         """ Performs a traversal of the game tree.
 
         Over a traversal the advantage and strategy memories are populated with
@@ -87,18 +89,25 @@ class DeepCFR(DeepCFRBase):
         Returns:
             payoff (list): Recursively returns expected payoffs for each action.
         """
+        state_hash = state['hash']
+
+        if state_hash in cache:
+            return points + cache[state_hash]
+        
         actions = state['legal_actions']
         legal_actions_count = len(actions)
         current_player = self._env.get_player_id()
         if self._env.is_over():
             # Terminal state get returns.
-            return self._env.get_payoffs()[player]
+            return points
 
         if current_player == player:
             if legal_actions_count == 1:
                 child_state, _ = self._env.step(actions[0])
-                payoff = self._traverse_game_tree(child_state, player)
+                new_points = self._env.get_reward(player)
+                payoff = self._traverse_game_tree(child_state, player, cache, new_points)
                 self._env.step_back()
+                cache[state_hash] = payoff - points
                 return payoff
 
             # Update the policy over the info set & actions via regret matching.
@@ -106,8 +115,9 @@ class DeepCFR(DeepCFRBase):
             _, strategy = self._sample_action_from_advantage(state, player)
             for action in actions:
                 child_state, _ = self._env.step(action)
+                new_points = self._env.get_reward(player)
                 expected_payoff[action] = self._traverse_game_tree(
-                    child_state, player)
+                    child_state, player, cache, new_points)
                 self._env.step_back()
             exp_payoff_sum = strategy @ expected_payoff
             sampled_regret = expected_payoff - exp_payoff_sum
@@ -115,7 +125,9 @@ class DeepCFR(DeepCFRBase):
                 self._advantage_memories[player].add(
                     AdvantageMemory(state['obs'], self._iteration,
                                     sampled_regret[act] / 400, act))
-            return exp_payoff_sum / np.sum(strategy)
+            payoff = exp_payoff_sum / np.sum(strategy)
+            cache[state_hash] = payoff - points
+            return payoff
         else:
             other_player = current_player
             if legal_actions_count == 1:
@@ -127,8 +139,10 @@ class DeepCFR(DeepCFRBase):
                 self._strategy_memories.add(
                     StrategyMemory(state['obs'], self._iteration, strategy))
             child_state, _ = self._env.step(action)
-            exp_payoff = self._traverse_game_tree(child_state, player)
+            new_points = self._env.get_reward(player)
+            exp_payoff = self._traverse_game_tree(child_state, player, cache, new_points)
             self._env.step_back()
+            cache[state_hash] = exp_payoff - points
             return exp_payoff
 
     def _sample_action_from_advantage(self, state, player):

@@ -81,6 +81,9 @@ class ThousandSchnapsenEnv(Env):
             payoffs[winner] += rest_points % self.player_num
         return payoffs
 
+    def get_reward(self, player: int) -> int:
+        return self.state['points'][player]
+
     def get_perfect_information(self) -> Dict:
         """ Get the perfect information of the current state
         Return:
@@ -115,6 +118,7 @@ class ThousandSchnapsenEnv(Env):
         hand: FrozenSet[Card] = state['hand']
         active_marriage: Optional[str] = state['active_marriage']
         used_marriages: FrozenSet[str] = state['used_marriages']
+        players_used = frozenset.union(*state['players_used'])
 
         first_player_id = stock[0][0] if len(stock) > 0 else current_player
         opponents_indices = self._get_opponents_indices(
@@ -160,7 +164,14 @@ class ThousandSchnapsenEnv(Env):
                      SUITS_COUNT)
 
         self.legal_actions = self._get_legal_actions()
-        state = {'obs': obs, 'legal_actions': self.legal_actions}
+
+        first_card = stock[0][1] if len(stock) > 0 else None
+        second_card = stock[1][1] if len(stock) > 1 else None
+        is_marriage_crucial = active_marriage is not None and (len([card for card in players_used if card.suit == active_marriage]) < 6 or (first_card is not None and first_card.suit == active_marriage) or (second_card is not None and second_card.suit == active_marriage))
+        marriage_hash = active_marriage if(is_marriage_crucial) else None
+        hash = (players_used, current_player, marriage_hash, first_card, second_card)
+
+        state = {'obs': obs, 'legal_actions': self.legal_actions, 'hash': hash}
         if self.allow_step_back:
             self.history.append((self.state, state, copy(self.certain_cards),
                                  copy(self.possible_cards)))
