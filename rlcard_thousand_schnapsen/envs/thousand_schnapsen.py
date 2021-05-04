@@ -169,7 +169,7 @@ class ThousandSchnapsenEnv(Env):
         second_card = stock[1][1] if len(stock) > 1 else None
         is_marriage_crucial = active_marriage is not None and (len([card for card in players_used if card.suit == active_marriage]) < 6 or (first_card is not None and first_card.suit == active_marriage) or (second_card is not None and second_card.suit == active_marriage))
         marriage_hash = active_marriage if(is_marriage_crucial) else None
-        hash = (players_used, current_player, marriage_hash, first_card, second_card)
+        hash = (players_used, current_player, marriage_hash, first_card, second_card, used_marriages)
 
         state = {'obs': obs, 'legal_actions': self.legal_actions, 'hash': hash}
         if self.allow_step_back:

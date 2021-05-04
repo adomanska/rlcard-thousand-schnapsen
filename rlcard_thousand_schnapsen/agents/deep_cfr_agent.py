@@ -37,8 +37,12 @@ class DeepCFR(DeepCFRBase):
         init_state, _ = self._env.reset()
         for p in range(self._num_players):
             cache = {}
-            for _ in range(self._num_traversals): 
+            cache_size = 0
+            while True: 
                 self._traverse_game_tree(init_state, p, cache)
+                if len(cache) == cache_size:
+                    break
+                cache_size = len(cache)
             print(len(cache))
 
             self.reinitialize_advantage_network(p)
@@ -99,7 +103,7 @@ class DeepCFR(DeepCFRBase):
         current_player = self._env.get_player_id()
         if self._env.is_over():
             # Terminal state get returns.
-            return points
+            return self._env.get_payoffs()[player]
 
         if current_player == player:
             if legal_actions_count == 1:

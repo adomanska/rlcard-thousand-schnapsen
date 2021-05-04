@@ -47,15 +47,15 @@ with tf.Session() as sess:
         agent = DeepCFR(sess,
                         scope='deep_cfr' + str(i),
                         env=env,
-                        num_step=100,
+                        num_step=1000,
                         num_traversals=1000,
                         policy_network_layers=(8 * 24, 4 * 24, 2 * 24, 24),
                         advantage_network_layers=(8 * 24, 4 * 24, 2 * 24, 24),
-                        batch_size_advantage=100,
-                        batch_size_strategy=100,
+                        batch_size_advantage=10,
+                        batch_size_strategy=10,
                         memory_capacity=int(1e6),
-                        learning_rate=1e-5,
-                        strategy_memory_capacity=2 * int(1e6))
+                        learning_rate=1e-4,
+                        strategy_memory_capacity=int(1e6))
         agents.append(agent)
 
     for _ in range(env.player_num - 1):
